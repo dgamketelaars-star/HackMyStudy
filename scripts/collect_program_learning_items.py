@@ -1,16 +1,11 @@
 from playwright.sync_api import sync_playwright
 import json
-import re
 
 import config
+from scraping_utils import clean_title
 
 COURSES_FILE = config.PROGRAM_COURSES_JSON
 OUTPUT_FILE = config.ALL_LEARNING_ITEMS_JSON
-
-
-def clean_title(text):
-    text = re.sub(r"\n+", "\n", text).strip()
-    return text
 
 
 def collect_links_from_current_page(page, course_title):

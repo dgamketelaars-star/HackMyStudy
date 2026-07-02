@@ -1,14 +1,10 @@
 from playwright.sync_api import sync_playwright
 import json
-import re
 
 import config
+from scraping_utils import clean_title
 
 OUTPUT = config.LEARNING_ITEMS_FULL_JSON
-
-def clean_title(text):
-    text = re.sub(r"\n+", "\n", text).strip()
-    return text
 
 with sync_playwright() as p:
     browser = p.chromium.connect_over_cdp(config.CDP_URL)
