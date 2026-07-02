@@ -1,0 +1,2 @@
+# Alleen nodig voor lokaal linten / de GitHub Actions lint-check, niet voor de pipeline zelf.
+ruff==0.15.20
