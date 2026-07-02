@@ -1,0 +1,4 @@
+# Directe dependencies van de actieve pipeline-scripts (scripts/*.py).
+# Na installatie ook eenmalig uitvoeren: playwright install chromium
+playwright==1.61.0
+openai==2.44.0
