@@ -1,11 +1,12 @@
 from openai import OpenAI
-from pathlib import Path
+
+import config
 
 client = OpenAI()
 
-PROMPT_FILE = Path("prompts/daan_module_prompt.md")
-COURSE_FILE = Path("course/course_1_raw.md")
-OUTPUT_FILE = Path("course/module_1_daan_test.md")
+PROMPT_FILE = config.DAAN_PROMPT_MD
+COURSE_FILE = config.COURSE_1_RAW_MD
+OUTPUT_FILE = config.MODULE_1_OUTPUT_MD
 
 prompt = PROMPT_FILE.read_text(encoding="utf-8")
 course_text = COURSE_FILE.read_text(encoding="utf-8")

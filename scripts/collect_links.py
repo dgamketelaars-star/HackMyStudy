@@ -1,11 +1,10 @@
 from playwright.sync_api import sync_playwright
-from urllib.parse import urljoin
 import json
 
-BASE_URL = "https://www.coursera.org"
+import config
 
 with sync_playwright() as p:
-    browser = p.chromium.connect_over_cdp("http://127.0.0.1:9222")
+    browser = p.chromium.connect_over_cdp(config.CDP_URL)
     page = browser.contexts[0].pages[0]
 
     page.wait_for_timeout(3000)
@@ -40,13 +39,13 @@ with sync_playwright() as p:
             "url": href
         })
 
-    with open("data/course_links.json", "w", encoding="utf-8") as f:
+    with open(config.COURSE_LINKS_JSON, "w", encoding="utf-8") as f:
         json.dump(cleaned, f, ensure_ascii=False, indent=2)
 
-    with open("data/course_links.txt", "w", encoding="utf-8") as f:
+    with open(config.COURSE_LINKS_TXT, "w", encoding="utf-8") as f:
         for item in cleaned:
             f.write(f"{item['title']}\n{item['url']}\n\n")
 
     print(f"✅ {len(cleaned)} links opgeslagen")
-    print("✅ data/course_links.json")
-    print("✅ data/course_links.txt")
+    print(f"✅ {config.COURSE_LINKS_JSON}")
+    print(f"✅ {config.COURSE_LINKS_TXT}")

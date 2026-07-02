@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright
-from pathlib import Path
 import json
+
+import config
 
 ALLOWED = [
     "microsoft-enterprise-product-management-fundamentals",
@@ -11,7 +12,7 @@ ALLOWED = [
 ]
 
 with sync_playwright() as p:
-    browser = p.chromium.connect_over_cdp("http://127.0.0.1:9222")
+    browser = p.chromium.connect_over_cdp(config.CDP_URL)
     page = browser.contexts[0].pages[0]
 
     links = page.evaluate("""
@@ -39,7 +40,7 @@ with sync_playwright() as p:
                     "url": clean_url
                 })
 
-    Path("data/program_courses.json").write_text(
+    config.PROGRAM_COURSES_JSON.write_text(
         json.dumps(courses, ensure_ascii=False, indent=2),
         encoding="utf-8"
     )

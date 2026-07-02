@@ -1,12 +1,12 @@
 from playwright.sync_api import sync_playwright
-from pathlib import Path
 import json
 import re
 
-INPUT_FILE = Path("data/learning_items.json")
-OUTPUT_DIR = Path("course")
-TEXT_DIR = OUTPUT_DIR / "text"
-HTML_DIR = OUTPUT_DIR / "html"
+import config
+
+INPUT_FILE = config.LEARNING_ITEMS_JSON
+TEXT_DIR = config.TEXT_DIR
+HTML_DIR = config.HTML_DIR
 
 TEXT_DIR.mkdir(parents=True, exist_ok=True)
 HTML_DIR.mkdir(parents=True, exist_ok=True)
@@ -25,7 +25,7 @@ with open(INPUT_FILE, "r", encoding="utf-8") as f:
 print(f"📚 {len(lessons)} lessen gevonden")
 
 with sync_playwright() as p:
-    browser = p.chromium.connect_over_cdp("http://127.0.0.1:9222")
+    browser = p.chromium.connect_over_cdp(config.CDP_URL)
     context = browser.contexts[0]
     page = context.pages[0]
 

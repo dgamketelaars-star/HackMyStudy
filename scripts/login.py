@@ -1,10 +1,10 @@
 from playwright.sync_api import sync_playwright
 
-USER_DATA_DIR = "browser-profile"
+import config
 
 with sync_playwright() as p:
     browser = p.chromium.launch_persistent_context(
-        USER_DATA_DIR,
+        config.BROWSER_PROFILE_DIR,
         headless=False
     )
 

@@ -1,8 +1,9 @@
 from playwright.sync_api import sync_playwright
-from pathlib import Path
 import re
 
-OUTPUT = Path("course/markdown")
+import config
+
+OUTPUT = config.MARKDOWN_DIR
 OUTPUT.mkdir(parents=True, exist_ok=True)
 
 
@@ -12,7 +13,7 @@ def clean_filename(name):
 
 with sync_playwright() as p:
 
-    browser = p.chromium.connect_over_cdp("http://127.0.0.1:9222")
+    browser = p.chromium.connect_over_cdp(config.CDP_URL)
     page = browser.contexts[0].pages[0]
 
     while True:

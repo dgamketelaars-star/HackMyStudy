@@ -1,7 +1,8 @@
-from pathlib import Path
 from playwright.sync_api import sync_playwright
 from extract_content import extract_content
 import re
+
+import config
 
 
 def safe_filename(text):
@@ -11,7 +12,7 @@ def safe_filename(text):
 
 
 with sync_playwright() as p:
-    browser = p.chromium.connect_over_cdp("http://127.0.0.1:9222")
+    browser = p.chromium.connect_over_cdp(config.CDP_URL)
     page = browser.contexts[0].pages[0]
 
     result = extract_content(page)
@@ -21,10 +22,10 @@ with sync_playwright() as p:
     url = page.url
     text = result["text"]
 
-    Path("course/markdown").mkdir(parents=True, exist_ok=True)
+    config.MARKDOWN_DIR.mkdir(parents=True, exist_ok=True)
 
     filename = safe_filename(title) + ".md"
-    path = Path("course/markdown") / filename
+    path = config.MARKDOWN_DIR / filename
 
     markdown = f"""---
 title: {title}

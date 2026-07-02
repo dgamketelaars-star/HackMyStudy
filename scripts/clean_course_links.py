@@ -1,5 +1,7 @@
 import json
 
+import config
+
 LEARNING_TYPES = [
     "/supplement/",
     "/lecture/",
@@ -8,7 +10,7 @@ LEARNING_TYPES = [
     "/assignment-submission/",
 ]
 
-with open("data/course_links.json", "r", encoding="utf-8") as f:
+with open(config.COURSE_LINKS_JSON, "r", encoding="utf-8") as f:
     links = json.load(f)
 
 cleaned = []
@@ -23,7 +25,7 @@ for item in links:
             "url": url
         })
 
-with open("data/learning_items.json", "w", encoding="utf-8") as f:
+with open(config.LEARNING_ITEMS_JSON, "w", encoding="utf-8") as f:
     json.dump(cleaned, f, ensure_ascii=False, indent=2)
 
 print(f"✅ {len(cleaned)} leer-items gevonden")

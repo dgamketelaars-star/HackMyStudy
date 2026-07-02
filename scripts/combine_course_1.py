@@ -1,7 +1,7 @@
-from pathlib import Path
+import config
 
-SOURCE = Path("course/markdown")
-OUTPUT = Path("course/course_1_raw.md")
+SOURCE = config.MARKDOWN_DIR
+OUTPUT = config.COURSE_1_RAW_MD
 
 files = sorted(SOURCE.glob("*.md"))
 

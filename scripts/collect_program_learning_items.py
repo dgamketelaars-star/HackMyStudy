@@ -1,10 +1,11 @@
 from playwright.sync_api import sync_playwright
-from pathlib import Path
 import json
 import re
 
-COURSES_FILE = Path("data/program_courses.json")
-OUTPUT_FILE = Path("data/all_learning_items.json")
+import config
+
+COURSES_FILE = config.PROGRAM_COURSES_JSON
+OUTPUT_FILE = config.ALL_LEARNING_ITEMS_JSON
 
 
 def clean_title(text):
@@ -55,7 +56,7 @@ def collect_links_from_current_page(page, course_title):
 
 
 with sync_playwright() as p:
-    browser = p.chromium.connect_over_cdp("http://127.0.0.1:9222")
+    browser = p.chromium.connect_over_cdp(config.CDP_URL)
     page = browser.contexts[0].pages[0]
 
     courses = json.loads(COURSES_FILE.read_text(encoding="utf-8"))

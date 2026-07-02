@@ -1,16 +1,17 @@
 from playwright.sync_api import sync_playwright
-from pathlib import Path
 import json
 import re
 
-OUTPUT = Path("data/learning_items_full.json")
+import config
+
+OUTPUT = config.LEARNING_ITEMS_FULL_JSON
 
 def clean_title(text):
     text = re.sub(r"\n+", "\n", text).strip()
     return text
 
 with sync_playwright() as p:
-    browser = p.chromium.connect_over_cdp("http://127.0.0.1:9222")
+    browser = p.chromium.connect_over_cdp(config.CDP_URL)
     page = browser.contexts[0].pages[0]
 
     print("URL:", page.url)
