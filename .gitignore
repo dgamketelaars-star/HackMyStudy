@@ -1,0 +1,12 @@
+.venv/
+.env
+__pycache__/
+*.pyc
+
+browser-profile/
+
+course/html/
+course/text/
+
+_archive/
+*.log
