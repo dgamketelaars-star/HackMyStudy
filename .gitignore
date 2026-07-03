@@ -10,3 +10,5 @@ course/*/text/
 
 _archive/
 *.log
+
+.claude/
