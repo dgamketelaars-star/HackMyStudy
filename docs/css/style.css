@@ -1,85 +1,411 @@
+/* HackMyStudy — rustige, speelse reader. Mobile-first, laptop-vriendelijk. */
+
+:root {
+    --bg: #101012;
+    --surface: #1a1a1d;
+    --surface-hover: #232327;
+    --border: #2b2b2f;
+    --text: #f3f3f1;
+    --text-muted: #9d9d9b;
+    --accent: #00c853;
+    --accent-text: #57e08c;
+    --accent-dim: rgba(0, 200, 83, 0.14);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --max-width: 640px;
+}
+
 * {
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
 }
 
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
 body {
-    background: #121212;
-    color: white;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-.container {
-    max-width: 500px;
-    margin: auto;
-    padding: 24px;
-}
-
-h1 {
-    font-size: 2rem;
-    margin-bottom: 10px;
-}
-
-.subtitle {
-    color: #bdbdbd;
-    margin-bottom: 30px;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     line-height: 1.5;
 }
 
-.hack-button {
-    width: 100%;
-    padding: 18px;
-    border: none;
-    border-radius: 14px;
-    background: #00c853;
-    color: white;
-    font-size: 1.2rem;
-    font-weight: bold;
-    cursor: pointer;
-    margin-bottom: 30px;
-    transition: 0.2s;
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 20px 20px 64px;
 }
 
-.hack-button:hover {
-    transform: scale(1.02);
+a {
+    color: inherit;
 }
 
-.card {
-    background: #1f1f1f;
-    border-radius: 18px;
-    padding: 22px;
+/* --- Topbar: merk + terug-navigatie, op elke pagina behalve het overzicht --- */
+
+.topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    min-height: 32px;
 }
 
-.card h2 {
-    margin-bottom: 15px;
-}
-
-.card p {
-    margin-bottom: 15px;
-    color: #bbbbbb;
-}
-
-progress {
-    width: 100%;
-    height: 16px;
-    margin-bottom: 20px;
-}
-
-.continue {
-    width: 100%;
-    padding: 15px;
-    border: none;
-    border-radius: 12px;
-    background: #2962ff;
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
-    text-align: center;
+.topbar .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
     text-decoration: none;
-    display: block;
+    font-size: 0.95rem;
+    padding: 6px 4px;
+    margin-left: -4px;
 }
 
-.continue:hover {
-    opacity: 0.9;
+.topbar .back:hover {
+    color: var(--text);
+}
+
+.wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+/* --- Hero (overzichtspagina) --- */
+
+.hero {
+    margin-bottom: 32px;
+}
+
+.hero h1 {
+    font-size: 1.9rem;
+    line-height: 1.2;
+    margin: 0 0 8px;
+    text-wrap: balance;
+}
+
+.hero p {
+    color: var(--text-muted);
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.55;
+    max-width: 46ch;
+}
+
+.section-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin: 0 0 12px;
+}
+
+/* --- Cursuskaarten --- */
+
+.course-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.course-card {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.course-card.is-available:hover,
+.course-card.is-available:focus-visible {
+    background: var(--surface-hover);
+    transform: translateY(-1px);
+}
+
+.course-card.is-soon {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.course-card-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.course-card h2 {
+    font-size: 1.08rem;
+    margin: 0;
+    line-height: 1.35;
+}
+
+.badge {
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--accent-dim);
+    color: var(--accent-text);
+    white-space: nowrap;
+}
+
+.badge.is-muted {
+    background: var(--border);
+    color: var(--text-muted);
+}
+
+.progress-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--border);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+}
+
+.course-card-meta {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* --- Lesnavigatie (course.html) --- */
+
+.lesson-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.lesson-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    text-decoration: none;
+    color: var(--text);
+}
+
+.lesson-row:hover,
+.lesson-row:focus-visible {
+    background: var(--surface-hover);
+}
+
+.lesson-index {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: var(--border);
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.lesson-row.is-translated .lesson-index {
+    background: var(--accent-dim);
+    color: var(--accent-text);
+}
+
+.lesson-title {
+    flex: 1;
+    font-size: 0.98rem;
+    line-height: 1.4;
+}
+
+.lesson-status {
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+/* --- Reader (lesson.html) --- */
+
+.reader-header {
+    margin-bottom: 24px;
+}
+
+.reader-eyebrow {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-text);
+    font-weight: 600;
+    margin: 0 0 8px;
+}
+
+.reader-header h1 {
+    font-size: 1.6rem;
+    line-height: 1.3;
+    margin: 0;
+    text-wrap: balance;
+}
+
+.reader-content {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    max-width: 65ch;
+}
+
+.reader-content h2 {
+    font-size: 1.3rem;
+    margin: 2em 0 0.6em;
+    line-height: 1.35;
+}
+
+.reader-content h3 {
+    font-size: 1.1rem;
+    margin: 1.6em 0 0.5em;
+}
+
+.reader-content p {
+    margin: 0 0 1.1em;
+}
+
+.reader-content ul,
+.reader-content ol {
+    margin: 0 0 1.1em;
+    padding-left: 1.3em;
+}
+
+.reader-content li {
+    margin-bottom: 0.4em;
+}
+
+.reader-content strong {
+    color: var(--text);
+}
+
+.reader-content hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2em 0;
+}
+
+.reader-content blockquote {
+    margin: 0 0 1.1em;
+    padding: 2px 0 2px 16px;
+    border-left: 3px solid var(--accent);
+    color: var(--text-muted);
+}
+
+.reader-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.reader-nav a {
+    flex: 1;
+    text-decoration: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.reader-nav a:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+}
+
+.reader-nav a.next {
+    text-align: right;
+}
+
+.reader-nav .nav-label {
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+/* --- Lege / placeholder-status --- */
+
+.empty-state {
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.empty-state .empty-emoji {
+    font-size: 1.6rem;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* --- Laptop / breder scherm --- */
+
+@media (min-width: 720px) {
+    :root {
+        --max-width: 760px;
+    }
+
+    .container {
+        padding-top: 40px;
+    }
+
+    .hero h1 {
+        font-size: 2.3rem;
+    }
+
+    .course-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .reader-content {
+        font-size: 1.08rem;
+    }
+}
+
+/* --- Toegankelijkheid --- */
+
+a:focus-visible,
+.lesson-row:focus-visible,
+.course-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
 }
