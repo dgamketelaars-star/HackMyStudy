@@ -1,0 +1,231 @@
+{
+  "courses": [
+    {
+      "slug": "microsoft-enterprise-product-management-fundamentals",
+      "title": "Enterprise Product Management Fundamentals",
+      "status": "available",
+      "lessons": [
+        {
+          "slug": "microsoft-ai-product-manager-programma-opgezet",
+          "title": "Microsoft AI Product Manager programma opgezet",
+          "module": null,
+          "order": 1,
+          "translated": false
+        },
+        {
+          "slug": "de-reis-naar-productbeheer-begint",
+          "title": "De reis naar productbeheer begint",
+          "module": null,
+          "order": 2,
+          "translated": false
+        },
+        {
+          "slug": "de-kerncompetenties-van-productmanagement",
+          "title": "De kerncompetenties van productmanagement",
+          "module": null,
+          "order": 3,
+          "translated": false
+        },
+        {
+          "slug": "een-dag-uit-het-leven-van-een-productmanager",
+          "title": "Een dag uit het leven van een productmanager",
+          "module": null,
+          "order": 4,
+          "translated": false
+        },
+        {
+          "slug": "dag-uit-het-leven",
+          "title": "Dag uit het leven",
+          "module": null,
+          "order": 5,
+          "translated": false
+        },
+        {
+          "slug": "de-impact-van-de-productmanager-op-het-bedrijfsresultaat",
+          "title": "De impact van de productmanager op het bedrijfsresultaat",
+          "module": null,
+          "order": 6,
+          "translated": false
+        },
+        {
+          "slug": "reflecteren-op-je-eigen-ervaringen-met-het-werken-in-projecten-of-teams",
+          "title": "Reflecteren op je eigen ervaringen met het werken in projecten of teams",
+          "module": null,
+          "order": 7,
+          "translated": false
+        },
+        {
+          "slug": "fundamentals-voor-productbeheer-van-bedrijfssoftware",
+          "title": "Fundamentals voor productbeheer van bedrijfssoftware",
+          "module": null,
+          "order": 8,
+          "translated": false
+        },
+        {
+          "slug": "casestudie-cloudproducten-voor-bedrijven-beheren",
+          "title": "Casestudie: Cloudproducten voor bedrijven beheren",
+          "module": null,
+          "order": 9,
+          "translated": false
+        },
+        {
+          "slug": "de-kernverantwoordelijkheden-en-vaardigheden-van-een-productmanager-beoordelen",
+          "title": "De kernverantwoordelijkheden en vaardigheden van een productmanager beoordelen",
+          "module": null,
+          "order": 10,
+          "translated": false
+        },
+        {
+          "slug": "je-eerste-week-als-productmanager-bij-een-grote-onderneming",
+          "title": "Je eerste week als productmanager bij een grote onderneming",
+          "module": null,
+          "order": 11,
+          "translated": false
+        },
+        {
+          "slug": "de-vaardigheden-van-de-productmanager",
+          "title": "De vaardigheden van de productmanager",
+          "module": null,
+          "order": 12,
+          "translated": false
+        },
+        {
+          "slug": "je-gereedschap-kiezen-voor-succes",
+          "title": "Je gereedschap kiezen voor succes",
+          "module": null,
+          "order": 13,
+          "translated": false
+        },
+        {
+          "slug": "essentiele-vaardigheden-voor-succesvolle-productmanagers",
+          "title": "Essentiële vaardigheden voor succesvolle productmanagers",
+          "module": null,
+          "order": 14,
+          "translated": false
+        },
+        {
+          "slug": "de-superkrachten-van-de-productmanager",
+          "title": "De superkrachten van de productmanager",
+          "module": null,
+          "order": 15,
+          "translated": false
+        },
+        {
+          "slug": "navigeren-door-tools-en-technologieen",
+          "title": "Navigeren door tools en technologieën",
+          "module": null,
+          "order": 16,
+          "translated": false
+        },
+        {
+          "slug": "hoe-maak-je-jezelf-klaar-voor-succes",
+          "title": "Hoe maak je jezelf klaar voor succes",
+          "module": null,
+          "order": 17,
+          "translated": false
+        },
+        {
+          "slug": "aan-de-slag-met-power-bi-en-microsoft-project",
+          "title": "Aan de slag met Power BI en Microsoft Project",
+          "module": null,
+          "order": 18,
+          "translated": false
+        },
+        {
+          "slug": "copilot-gebruiken-voor-productbeheertaken",
+          "title": "Copilot gebruiken voor productbeheertaken",
+          "module": null,
+          "order": 19,
+          "translated": false
+        },
+        {
+          "slug": "verantwoordelijkheden-van-een-productmanager",
+          "title": "Verantwoordelijkheden van een productmanager",
+          "module": null,
+          "order": 20,
+          "translated": false
+        },
+        {
+          "slug": "populaire-raamwerken-voor-productbeheer",
+          "title": "Populaire raamwerken voor productbeheer",
+          "module": null,
+          "order": 21,
+          "translated": false
+        },
+        {
+          "slug": "agile-vs-waterval",
+          "title": "Agile vs. waterval",
+          "module": null,
+          "order": 22,
+          "translated": false
+        },
+        {
+          "slug": "kanban-scrum-en-waterval",
+          "title": "Kanban, Scrum en Waterval",
+          "module": null,
+          "order": 23,
+          "translated": false
+        },
+        {
+          "slug": "de-juiste-methodologie-voor-uw-product-kiezen",
+          "title": "De juiste methodologie voor uw product kiezen",
+          "module": null,
+          "order": 24,
+          "translated": false
+        },
+        {
+          "slug": "raamwerken-voor-bedrijfsontwikkeling",
+          "title": "Raamwerken voor bedrijfsontwikkeling",
+          "module": null,
+          "order": 25,
+          "translated": false
+        },
+        {
+          "slug": "methodologieen-voor-productbeheer",
+          "title": "Methodologieën voor productbeheer",
+          "module": null,
+          "order": 26,
+          "translated": false
+        },
+        {
+          "slug": "het-vaststellen-van-een-productontwikkelingsproces-voor-synergyhr",
+          "title": "Het vaststellen van een productontwikkelingsproces voor SynergyHR",
+          "module": null,
+          "order": 27,
+          "translated": false
+        },
+        {
+          "slug": "het-kruispunt-van-de-sprintplanning-de-keuze-van-een-ontwikkelingsmethodiek-voor-de-compliance-module-van-synergyhr",
+          "title": "Het kruispunt van de sprintplanning — De keuze van een ontwikkelingsmethodiek voor de compliance-module van SynergyHR",
+          "module": null,
+          "order": 28,
+          "translated": false
+        }
+      ]
+    },
+    {
+      "slug": "microsoft-market-research-and-competitive-analysis",
+      "title": "Market Research and Competitive Analysis",
+      "status": "coming_soon",
+      "lessons": []
+    },
+    {
+      "slug": "microsoft-product-strategy-and-roadmapping",
+      "title": "Product Strategy and Roadmapping",
+      "status": "coming_soon",
+      "lessons": []
+    },
+    {
+      "slug": "microsoft-product-design-and-ux-ui-fundamentals",
+      "title": "Product Design and UX/UI Fundamentals",
+      "status": "coming_soon",
+      "lessons": []
+    },
+    {
+      "slug": "microsoft-product-launch-and-post-launch-management",
+      "title": "Product Launch and Post-Launch Management",
+      "status": "coming_soon",
+      "lessons": []
+    }
+  ]
+}

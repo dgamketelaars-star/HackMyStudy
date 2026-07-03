@@ -7,6 +7,16 @@ opzettelijk NIET samengevoegd — zie PIPELINE.md voor de toelichting.
 """
 
 import re
+import unicodedata
+
+
+def slugify(text):
+    """Zet een titel om in een URL-veilige slug, bv. voor lesson-ids in de
+    webapp-manifest: 'Casestudie: Cloudproducten' -> 'casestudie-cloudproducten'."""
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    text = text.lower()
+    text = re.sub(r"[^a-z0-9]+", "-", text).strip("-")
+    return text
 
 
 def clean_title(text):
