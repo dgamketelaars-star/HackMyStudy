@@ -80,6 +80,6 @@ def build_manifest():
 if __name__ == "__main__":
     manifest = build_manifest()
     for c in manifest["courses"]:
-        translated_count = sum(1 for l in c["lessons"] if l["translated"])
+        translated_count = sum(1 for lesson in c["lessons"] if lesson["translated"])
         print(f"{c['status']:12} {c['slug']:55} {len(c['lessons']):3} lessen, {translated_count} vertaald")
     print(f"\n✅ Opgeslagen: {config.MANIFEST_JSON}")

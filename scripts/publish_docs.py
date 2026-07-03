@@ -31,7 +31,7 @@ def publish():
         src_dir = config.translated_dir(slug)
         dest_dir = config.DOCS_CONTENT_DIR / slug
 
-        translated_lessons = [l for l in course["lessons"] if l["translated"]]
+        translated_lessons = [lesson for lesson in course["lessons"] if lesson["translated"]]
         if not translated_lessons:
             continue
 
