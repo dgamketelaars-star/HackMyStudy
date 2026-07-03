@@ -2,3 +2,4 @@
 # Na installatie ook eenmalig uitvoeren: playwright install chromium
 playwright==1.61.0
 openai==2.44.0
+beautifulsoup4==4.15.0
