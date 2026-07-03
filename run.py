@@ -50,33 +50,38 @@ COMMANDS = [
     ("save-lesson", "save_current_lesson.py",
      "(interactief) Sla alleen de huidige pagina op als markdown-les"),
 
-    # --- Samenvoegen en publiceren ---
+    # --- Samenvoegen, vertalen en publiceren ---
     ("combine", "combine_course.py",
      "Voeg de markdown-lessen van elke cursus samen, in de echte Coursera-volgorde -> course/<cursus>/raw.md"),
+    ("translate-module", "translate_module.py",
+     "Vertaal één module naar de Daan-leerstijl (echte OpenAI-kosten!) -- gebruik: run.py translate-module -- --course <slug> --module <n> [--dry-run]"),
     ("generate-module", "generate_module.py",
-     "(proof-of-concept, zie PIPELINE.md) Vertaal een cursusfragment via OpenAI"),
+     "(oude proof-of-concept, zie PIPELINE.md) Vertaal een cursusfragment via OpenAI"),
     ("build-manifest", "build_manifest.py",
-     "Bouw het cursus/les-overzicht dat de webapp gebruikt -> data/manifest.json"),
+     "Bouw het cursus/module-overzicht dat de webapp gebruikt -> data/manifest.json"),
     ("publish-docs", "publish_docs.py",
-     "Kopieer de manifest + vertaalde lessen naar docs/, zodat de webapp ze kan tonen"),
+     "Kopieer de manifest + vertaalde modules naar docs/, zodat de webapp ze kan tonen"),
 ]
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="HackMyStudy pipeline-launcher. Zie PIPELINE.md voor de volledige uitleg.",
+        description="HackMyStudy pipeline-launcher. Zie PIPELINE.md voor de volledige uitleg. "
+                     "Extra argumenten na '--' worden doorgegeven aan het onderliggende script.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     for name, script, help_text in COMMANDS:
         subparsers.add_parser(name, help=help_text)
 
-    args = parser.parse_args()
+    args, extra_args = parser.parse_known_args()
+    if extra_args and extra_args[0] == "--":
+        extra_args = extra_args[1:]
 
     script_by_name = {name: script for name, script, _ in COMMANDS}
     script_path = SCRIPTS_DIR / script_by_name[args.command]
 
-    result = subprocess.run([sys.executable, str(script_path)], cwd=REPO_ROOT)
+    result = subprocess.run([sys.executable, str(script_path), *extra_args], cwd=REPO_ROOT)
     sys.exit(result.returncode)
 
 

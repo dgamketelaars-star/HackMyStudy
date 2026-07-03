@@ -87,7 +87,7 @@ def clean_lesson_body(text, title):
     tail = text[marker:]
     tail = INSTRUCTION_HEADER.sub("", tail, count=1)
     tail = LABEL_LINE.sub("", tail)
-    lines = [l for l in tail.split("\n") if not BARE_TIMESTAMP.match(l.strip())]
+    lines = [line for line in tail.split("\n") if not BARE_TIMESTAMP.match(line.strip())]
     tail = "\n".join(lines)
     tail = TRAILING_FOOTER.sub("", tail)
     tail = tail.replace("​", "").replace("\xa0", " ")
@@ -208,7 +208,7 @@ def format_outline_summary(outline):
 def write_section_body(client, prompt_text, lessons, outline, section_index, module_title, usage_log, part_label=""):
     section = outline[section_index]
     lesson_subset = [lessons[n - 1] for n in section["source_lessons"]] if section["source_lessons"] else []
-    source_text = "\n\n---\n\n".join(f"### {l['title']}\n\n{l['text']}" for l in lesson_subset)
+    source_text = "\n\n---\n\n".join(f"### {lesson['title']}\n\n{lesson['text']}" for lesson in lesson_subset)
     outline_summary = format_outline_summary(outline)
 
     part_note = f" (deel {part_label})" if part_label else ""
@@ -240,7 +240,7 @@ def write_section_chunked(client, prompt_text, lessons, outline, section_index, 
     section = outline[section_index]
     lesson_ids = section["source_lessons"]
     if not lesson_ids:
-        return f"*(Geen bronlessen toegewezen aan dit onderdeel — overgeslagen.)*"
+        return "*(Geen bronlessen toegewezen aan dit onderdeel — overgeslagen.)*"
 
     prompt_tokens = count_tokens(prompt_text)
 
@@ -287,7 +287,7 @@ def main():
     matched, missing = match_and_clean(items, config.markdown_dir(slug))
     module_title = guess_module_title(config.markdown_dir(slug), module_number) or f"Module {module_number}"
 
-    tokens_source = sum(count_tokens(l["text"]) for l in matched)
+    tokens_source = sum(count_tokens(lesson["text"]) for lesson in matched)
     tokens_prompt = count_tokens(prompt_text)
 
     print("===== PRE-FLIGHT CHECK =====")
