@@ -2,9 +2,7 @@ from playwright.sync_api import sync_playwright
 import re
 
 import config
-
-OUTPUT = config.MARKDOWN_DIR
-OUTPUT.mkdir(parents=True, exist_ok=True)
+from scraping_utils import course_slug_from_url
 
 
 def clean_filename(name):
@@ -15,6 +13,14 @@ with sync_playwright() as p:
 
     browser = p.chromium.connect_over_cdp(config.CDP_URL)
     page = browser.contexts[0].pages[0]
+
+    slug = course_slug_from_url(page.url)
+    if not slug:
+        raise SystemExit(f"Kan geen cursus-slug herkennen in: {page.url}")
+
+    OUTPUT = config.markdown_dir(slug)
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    print(f"Cursus: {slug}")
 
     while True:
 

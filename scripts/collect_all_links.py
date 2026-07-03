@@ -2,9 +2,7 @@ from playwright.sync_api import sync_playwright
 import json
 
 import config
-from scraping_utils import clean_title
-
-OUTPUT = config.LEARNING_ITEMS_FULL_JSON
+from scraping_utils import clean_title, course_slug_from_url
 
 with sync_playwright() as p:
     browser = p.chromium.connect_over_cdp(config.CDP_URL)
@@ -12,6 +10,13 @@ with sync_playwright() as p:
 
     print("URL:", page.url)
     print("Titel:", page.title())
+
+    slug = course_slug_from_url(page.url)
+    if not slug:
+        raise SystemExit(f"Kan geen cursus-slug herkennen in: {page.url}")
+
+    OUTPUT = config.course_data_dir(slug) / "learning_items_full.json"
+    config.course_data_dir(slug).mkdir(parents=True, exist_ok=True)
 
     seen = {}
 

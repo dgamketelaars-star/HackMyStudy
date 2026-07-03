@@ -2,11 +2,17 @@ from openai import OpenAI
 
 import config
 
+# LET OP: dit is nog de oorspronkelijke proof-of-concept (hele cursus afgekapt
+# op 15.000 tekens, niet per module/les) — bewust ongewijzigd gelaten. Zie
+# PIPELINE.md voor de openstaande beslissing over de echte vertaalgranulariteit
+# (per les vs. per module) voordat dit script de echte vertaalstap wordt.
+SLUG = "microsoft-enterprise-product-management-fundamentals"
+
 client = OpenAI()
 
 PROMPT_FILE = config.DAAN_PROMPT_MD
-COURSE_FILE = config.COURSE_1_RAW_MD
-OUTPUT_FILE = config.MODULE_1_OUTPUT_MD
+COURSE_FILE = config.raw_md(SLUG)
+OUTPUT_FILE = config.course_dir(SLUG) / "module_1_daan_test.md"
 
 prompt = PROMPT_FILE.read_text(encoding="utf-8")
 course_text = COURSE_FILE.read_text(encoding="utf-8")

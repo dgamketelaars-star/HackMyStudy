@@ -2,6 +2,7 @@ from playwright.sync_api import sync_playwright
 import json
 
 import config
+from scraping_utils import course_slug_from_url
 
 ALLOWED = [
     "microsoft-enterprise-product-management-fundamentals",
@@ -36,11 +37,13 @@ with sync_playwright() as p:
             if clean_url not in seen:
                 seen.add(clean_url)
                 courses.append({
+                    "slug": course_slug_from_url(clean_url),
                     "title": link["title"],
                     "url": clean_url
                 })
 
-    config.PROGRAM_COURSES_JSON.write_text(
+    config.DATA_DIR.mkdir(parents=True, exist_ok=True)
+    config.COURSES_JSON.write_text(
         json.dumps(courses, ensure_ascii=False, indent=2),
         encoding="utf-8"
     )

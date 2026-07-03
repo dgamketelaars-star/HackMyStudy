@@ -3,6 +3,7 @@ from extract_content import extract_content
 import re
 
 import config
+from scraping_utils import course_slug_from_url
 
 
 def safe_filename(text):
@@ -15,6 +16,10 @@ with sync_playwright() as p:
     browser = p.chromium.connect_over_cdp(config.CDP_URL)
     page = browser.contexts[0].pages[0]
 
+    slug = course_slug_from_url(page.url)
+    if not slug:
+        raise SystemExit(f"Kan geen cursus-slug herkennen in: {page.url}")
+
     result = extract_content(page)
 
     title = result["title"].replace(" | Coursera", "")
@@ -22,10 +27,10 @@ with sync_playwright() as p:
     url = page.url
     text = result["text"]
 
-    config.MARKDOWN_DIR.mkdir(parents=True, exist_ok=True)
+    config.markdown_dir(slug).mkdir(parents=True, exist_ok=True)
 
     filename = safe_filename(title) + ".md"
-    path = config.MARKDOWN_DIR / filename
+    path = config.markdown_dir(slug) / filename
 
     markdown = f"""---
 title: {title}

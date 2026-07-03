@@ -2,12 +2,20 @@ from playwright.sync_api import sync_playwright
 import json
 
 import config
+from scraping_utils import course_slug_from_url
 
 with sync_playwright() as p:
     browser = p.chromium.connect_over_cdp(config.CDP_URL)
     page = browser.contexts[0].pages[0]
 
     page.wait_for_timeout(3000)
+
+    slug = course_slug_from_url(page.url)
+    if not slug:
+        raise SystemExit(
+            f"Kan geen cursus-slug herkennen in de huidige pagina-URL: {page.url}\n"
+            "Zorg dat de open pagina een coursera.org/learn/<cursus>/... URL is."
+        )
 
     links = page.locator("a").evaluate_all("""
         elements => elements.map(a => ({
@@ -39,13 +47,15 @@ with sync_playwright() as p:
             "url": href
         })
 
-    with open(config.COURSE_LINKS_JSON, "w", encoding="utf-8") as f:
+    config.course_data_dir(slug).mkdir(parents=True, exist_ok=True)
+
+    with open(config.course_links_json(slug), "w", encoding="utf-8") as f:
         json.dump(cleaned, f, ensure_ascii=False, indent=2)
 
-    with open(config.COURSE_LINKS_TXT, "w", encoding="utf-8") as f:
+    with open(config.course_links_txt(slug), "w", encoding="utf-8") as f:
         for item in cleaned:
             f.write(f"{item['title']}\n{item['url']}\n\n")
 
-    print(f"✅ {len(cleaned)} links opgeslagen")
-    print(f"✅ {config.COURSE_LINKS_JSON}")
-    print(f"✅ {config.COURSE_LINKS_TXT}")
+    print(f"✅ {len(cleaned)} links opgeslagen voor '{slug}'")
+    print(f"✅ {config.course_links_json(slug)}")
+    print(f"✅ {config.course_links_txt(slug)}")
