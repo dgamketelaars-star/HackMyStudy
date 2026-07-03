@@ -5,34 +5,56 @@
 | Map | Doel |
 |---|---|
 | `run.py` | Eén startpunt voor de hele pipeline (`python run.py --help`). |
-| `scripts/` | Alle Python-scripts van de content-pipeline (scrapen, opschonen, herschrijven). |
-| `data/` | Kleine JSON/txt-tussenbestanden: lijsten van links en leer-items. Input/output van de scrape-stappen, geen eindproduct. |
-| `course/` | Cursusinhoud. `markdown/` is het eindproduct van deze map; `html/` en `text/` zijn ruwe scrape-cache (niet in Git, zie [PIPELINE.md](PIPELINE.md)). |
-| `docs/` | De publieke webapp (GitHub Pages), toont de Markdown-lessen in een mobiele reader. |
+| `scripts/` | Alle Python-scripts van de content-pipeline (scrapen, opschonen, herschrijven, publiceren). |
+| `data/` | Cursusdata: `courses.json` (de 5 officiële cursussen), `manifest.json` (wat de webapp toont), en per cursus een submap `data/<cursus-slug>/` met tussenresultaten. |
+| `course/` | Per cursus (`course/<cursus-slug>/`) de scrape-content: `html/`, `text/` (ruwe cache), `markdown/` (brontekst per les), `raw.md` (samengevoegd), `translated/` (vertaalde lessen — nu leeg). |
+| `docs/` | De publieke webapp (GitHub Pages): cursusoverzicht, lesnavigatie, reader. Alleen deze map is vanaf de gepubliceerde site bereikbaar. |
 | `prompts/` | Prompts voor de LLM-herschrijfstap, bv. het persoonlijke leerprofiel. |
-| `_archive/` | Oude testbestanden, duplicaten en debug-scripts. Bewust bewaard, niet in Git (zie `.gitignore`), niet actief in gebruik. |
+| `_archive/` | Oude testbestanden, duplicaten, prototype-pagina's. Bewust bewaard, niet in Git. |
 | `browser-profile/` | Playwright's opgeslagen browser-sessie (cookies/login voor Coursera). **Nooit in Git.** |
 | `.venv/` | Lokale Python-omgeving. **Nooit in Git.** |
+
+### Cursus-slug
+
+Elke cursus heeft een stabiele identifier: het laatste segment van de Coursera-URL, bv.
+`microsoft-enterprise-product-management-fundamentals`. Die slug is de mapnaam onder zowel
+`course/` als `data/`, en staat als `slug`-veld in `data/courses.json`.
+
+```
+course/microsoft-enterprise-product-management-fundamentals/
+├── html/         (ruw, buiten Git)
+├── text/         (ruw, buiten Git)
+├── markdown/     (brontekst per les, in Git)
+├── raw.md        (alle markdown-lessen samengevoegd, in de echte cursusvolgorde)
+└── translated/   (vertaalde lessen — nu nog leeg, zie PIPELINE.md)
+
+data/microsoft-enterprise-product-management-fundamentals/
+├── course_links.json / .txt
+└── learning_items.json   (de leer-items van deze cursus, met volgorde en evt. modulenummer)
+```
 
 ## Scripts (`scripts/`)
 
 | Script | Doel |
 |---|---|
-| `config.py` | Centrale paden en constanten (CDP-URL, data/course-locaties) — geen eigen entry point. |
-| `scraping_utils.py` | Kleine gedeelde hulpfunctie (`clean_title`) — geen eigen entry point. |
-| `extract_content.py` | Haalt lesinhoud (reading/video) van de huidige pagina — geen eigen entry point, wordt aangeroepen door `save_current_lesson.py`. |
+| `config.py` | Centrale paden en constanten, cursus-parametrisch (`config.markdown_dir(slug)` etc.) — geen eigen entry point. |
+| `scraping_utils.py` | Gedeelde hulpfuncties: `clean_title`, `normalize_title`, `slugify`, `course_slug_from_url` — geen eigen entry point. |
+| `extract_content.py` | Haalt lesinhoud (reading/video) van de huidige live pagina — wordt aangeroepen door `save_current_lesson.py`. |
 | `login.py` | Opent een geïsoleerde Playwright-browser (`browser-profile/`) om in te loggen op Coursera. |
 | `open_my_chrome.py` | Alternatief: opent je eigen, echte Chrome-profiel om in te loggen. |
-| `collect_links.py` | Verzamelt alle `/learn/`-links op de huidige pagina → `data/course_links.json`/`.txt`. |
-| `clean_course_links.py` | Filtert ruwe links tot echte leer-items (lecture/supplement/…) → `data/learning_items.json`. |
-| `download_lessons.py` | Downloadt elk leer-item als ruwe html + text → `course/html/`, `course/text/`. |
-| `download_course.py` | Loopt via de "volgende"-knop door een cursus en slaat elke les op als Markdown → `course/markdown/`. |
-| `save_current_lesson.py` | Slaat alleen de huidige pagina op als één Markdown-les (met frontmatter) → `course/markdown/`. |
-| `combine_course_1.py` | Voegt alle Markdown-lessen samen tot één bestand → `course/course_1_raw.md`. |
-| `generate_module.py` | Stuurt de ruwe cursustekst + prompt naar OpenAI en slaat de herschreven versie op → `course/module_1_daan_test.md`. |
-| `save_program_courses.py` | (Programma-brede pipeline) Verzamelt toegestane cursussen van het hele programma → `data/program_courses.json`. |
-| `collect_program_learning_items.py` | (Programma-breed) Verzamelt leer-items voor alle programma-cursussen → `data/all_learning_items.json`. |
-| `collect_all_links.py` | (Programma-breed) Scrollt en verzamelt leerlinks op de huidige pagina → `data/learning_items_full.json`. |
+| `save_program_courses.py` | Verzamelt de 5 officiële cursussen (met slug) → `data/courses.json`. |
+| `collect_program_learning_items.py` | Bezoekt alle 5 cursussen × module 1-5 en verzamelt lessen (mét modulenummer) → `data/<cursus>/learning_items.json`. De primaire manier om spoor 1 te vullen. |
+| `collect_links.py` | (losse pagina) Verzamelt alle `/learn/`-links van de huidige pagina → `data/<cursus>/course_links.json`/`.txt`. |
+| `clean_course_links.py` | Filtert `course_links.json` tot leer-items, voor elke cursus die dat heeft (batch) → `data/<cursus>/learning_items.json`. |
+| `collect_all_links.py` | (losse pagina) Scrollt en verzamelt leerlinks → `data/<cursus>/learning_items_full.json`. |
+| `download_lessons.py` | Downloadt elk leer-item als ruwe html + text, voor elke cursus met `learning_items.json` (batch, idempotent) → `course/<cursus>/html/`, `text/`. |
+| `lessons_to_markdown.py` | Zet gecachte **reading**-lessen offline om naar markdown (video's niet — zie PIPELINE.md) → `course/<cursus>/markdown/`. |
+| `download_course.py` | (interactief, live pagina) Loopt via de "volgende"-knop door een cursus, slaat elke les op als markdown. |
+| `save_current_lesson.py` | (interactief, live pagina) Slaat alleen de huidige pagina op als één markdown-les. |
+| `combine_course.py` | Voegt de markdown-lessen van elke cursus samen in de echte Coursera-volgorde (niet alfabetisch) → `course/<cursus>/raw.md`. |
+| `generate_module.py` | Proof-of-concept vertaalstap (nog niet de definitieve aanpak, zie PIPELINE.md). |
+| `build_manifest.py` | Bouwt `data/manifest.json`: alle 5 cursussen + hun lessen + welke al vertaald zijn. |
+| `publish_docs.py` | Kopieert de manifest + vertaalde lessen naar `docs/content/`, zodat de statische webapp ze kan tonen. |
 
 Voor de volgorde waarin deze scripts elkaar opvolgen: zie [PIPELINE.md](PIPELINE.md).
 
@@ -40,7 +62,10 @@ Voor de volgorde waarin deze scripts elkaar opvolgen: zie [PIPELINE.md](PIPELINE
 
 | Bestand | Doel |
 |---|---|
-| `index.html` | Startpagina. |
-| `modules/module-1.html` | Toont één module, laadt de Markdown-content via `js/module1.js`. |
-| `content/module1.md` | De Markdown-tekst die getoond wordt (handmatig hierheen gekopieerd vanuit `course/`). |
-| `css/style.css`, `js/app.js`, `js/module1.js` | Styling en front-end logica. `app.js` is nog een lege stub. |
+| `index.html` + `js/app.js` | Cursusoverzicht: alle 5 cursussen als kaart, met voortgang. |
+| `course.html` + `js/course.js` | Lesnavigatie voor één cursus (`?course=<slug>`). |
+| `lesson.html` + `js/lesson.js` | De reader: rendert vertaalde markdown, of een "nog niet vertaald"-status. Prev/next-navigatie. |
+| `js/manifest.js` | Gedeelde helper om `content/manifest.json` op te halen. |
+| `content/manifest.json` | Gegenereerd door `publish_docs.py` — niet handmatig bewerken. |
+| `content/<cursus-slug>/*.md` | Gepubliceerde vertaalde lessen — niet handmatig bewerken. |
+| `css/style.css` | Het volledige ontwerp: donker, groen accent, mobile-first met laptop-breakpoint. |
