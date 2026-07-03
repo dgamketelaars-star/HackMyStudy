@@ -43,21 +43,27 @@ browservenster te openen en in te loggen — ze zetten zelf **geen** debug-poort
 
 6. python run.py combine
    Voegt markdown-lessen samen in de echte Coursera-volgorde (gematcht
-   tegen learning_items.json — niet alfabetisch).
+   tegen learning_items.json — niet alfabetisch). Dit bestand is vooral
+   nuttig als overzicht; de vertaalstap (7) leest de lessen los in.
    Output: course/<slug>/raw.md
 
-7. (vertaalstap — nog niet definitief, zie hieronder)
+7. python run.py translate-module -- --course <slug> --module <n> [--dry-run]
+   Vertaalt ÉÉN module naar de Daan-leerstijl via OpenAI — zie
+   "De vertaalstap" hieronder voor hoe dit werkt en waarom. Kost echt geld
+   (klein bedrag, zie hieronder); --dry-run laat alleen het pre-flight-
+   rapport zien zonder aan te roepen.
+   Output: course/<slug>/translated/module-<n>.md
 
 8. python run.py build-manifest
-   Output: data/manifest.json — wat de webapp laat zien.
+   Output: data/manifest.json — wat de webapp laat zien, nu op moduleniveau.
 
 9. python run.py publish-docs
-   Kopieert manifest + vertaalde lessen naar docs/content/.
+   Kopieert manifest + vertaalde modules naar docs/content/.
 ```
 
 Stap 1-2 zijn maar één keer nodig per keer dat je alle 5 cursussen wilt verzamelen; stap 3-6
-kun je per cursus of in bulk draaien; stap 8-9 draai je opnieuw zodra er nieuwe vertaalde content
-is.
+kun je per cursus of in bulk draaien; stap 7 draai je bewust per module (zie hieronder — geen
+batchvertaling); stap 8-9 draai je opnieuw zodra er nieuwe vertaalde content is.
 
 ## Waarom lessons-to-markdown niet alles kan omzetten
 
@@ -80,28 +86,58 @@ beoordeelde opdrachten/rollenspellen, geen reading of video — waarschijnlijk m
 voor reading-lessen, maar video-lessen moet je nog steeds interactief doorlopen (stap 5). Niet
 "zo min mogelijk handmatige tussenstappen" als gehoopt — een eerlijke beperking, geen giswerk.
 
-## De vertaalstap: nog niet af
+## De vertaalstap
 
-`scripts/generate_module.py` is nog de oorspronkelijke proof-of-concept: de eerste 15.000 tekens
-van de **hele cursus** (niet één module) naar de prompt, als eenmalige test. Dat is bewust
-ongewijzigd gelaten — de prompt en vertaalstrategie zijn kernfunctionaliteit
-([prompts/daan_module_prompt.md](prompts/daan_module_prompt.md)) en worden niet stilzwijgend
-aangepast.
+`scripts/translate_module.py` is de echte vertaalstap: **per module**, niet per losse les — dat
+is een bewuste productkeuze (niet de standaard "vat elke les apart samen"-aanpak), omdat de
+prompt om samenhang over lessen heen vraagt ("Lees de volledige module... Bepaal eerst de beste
+leerstructuur"). `scripts/generate_module.py` blijft bestaan als de oorspronkelijke
+proof-of-concept (eerste 15.000 tekens van een hele cursus, niet module-bewust) maar is niet meer
+de aanbevolen route.
 
-Er is een echte granulariteits-vraag die eerst beantwoord moet worden voordat dit de definitieve
-vertaalstap wordt:
+De prompt zelf ([prompts/daan_module_prompt.md](prompts/daan_module_prompt.md)) wordt in élke
+OpenAI-aanroep ongewijzigd als system-instructie gebruikt — er wordt nooit stilzwijgend aan de
+leerstrategie gesleuteld.
 
-- De prompt is geschreven voor **één module** ("Lees de volledige module... Bepaal eerst de beste
-  leerstructuur voor deze module") — dus met samenhang over meerdere lessen heen.
-- Voor cursus 1 is er geen betrouwbare modulegrens per les (single-page pipeline scrapete zonder
-  modulecontext). Cursussen die via `collect_program_learning_items.py` verzameld worden, krijgen
-  dat wél (het `module`-veld in `learning_items.json`).
-- Een hele cursus (5 modules, ~250 KB tekst) in één keer naar het model sturen past niet goed bij
-  de prompt's opzet en wordt duur; per losse les vertalen is goedkoper maar mist de
-  module-brede samenhang die de prompt juist vraagt.
+**Werkwijze (module-aware, geen per-les vertaling):**
 
-Dit is een productbeslissing met echte kostenimpact (OpenAI-aanroepen over 26+ lessen x 5
-cursussen), dus geen gok — zie de vraag die hierover apart gesteld is.
+1. **Pre-flight check** (altijd, ook bij `--dry-run`): welke cursus/module, hoeveel lessen erin
+   zitten, welke daarvan content hebben, welke ontbreken, de lesvolgorde, en het geschatte
+   tokengebruik. Onder 90% dekking stopt het script vóór de eerste aanroep.
+2. **Video-content opschonen.** Lessen die via `download_course.py`/`save_current_lesson.py`
+   gescraped zijn, bevatten voor video's soms de hele pagina (zijbalkmenu, transcript-knoppen,
+   tijdstempels) omdat de specifieke content-selector niet matchte en op de volledige paginatekst
+   is teruggevallen. Ongefilterd zou dat niet alleen tokens verspillen, maar het model ook de
+   titels van *andere* modules laten zien alsof die bij de huidige module horen. Een regex-cleaner
+   isoleert het echte transcript (gevonden en geverifieerd tegen alle 9 video-lessen van module 1
+   van cursus 1).
+3. **Fase 1 — structuur bepalen** (1 compacte aanroep): het model krijgt per les alleen de titel +
+   een korte preview (niet de volledige tekst) en voert het eerste deel van de prompt uit
+   ("Bepaal eerst de beste leerstructuur"): het bedenkt 4-8 samenhangende onderdelen en wijst elke
+   bronles expliciet aan een onderdeel toe.
+4. **Fase 2 — onderdelen schrijven** (één aanroep per onderdeel): elk onderdeel krijgt de
+   volledige tekst van precies de lessen die fase 1 eraan toewees, plus de complete outline (titels
+   only) zodat het naar eerdere/latere onderdelen kan verwijzen. Is een onderdeel te groot voor één
+   veilige aanroep, dan wordt het automatisch in kleinere lesnummer-batches opgesplitst en
+   samengevoegd — de indeling blijft die van fase 1, dit is nog steeds geen per-les vertaling.
+5. De onderdelen worden samengevoegd tot één module-markdown-bestand:
+   `course/<slug>/translated/module-<n>.md`.
+
+**Waarom niet gewoon de hele module in één aanroep?** Dat was het eerste ontwerp. Bij de eerste
+echte aanroep (module 1, cursus 1, ~50.000 tokens brontekst + prompt) gaf OpenAI meteen een
+`RateLimitError`: dit account heeft een limiet van **30.000 tokens/minuut** voor gpt-4.1 — ver
+onder wat één aanroep met de hele module nodig had. Er was op dat moment nog niets gegenereerd,
+dus geen kosten. Het ontwerp is daarna herzien naar de fase-1/fase-2-aanpak hierboven, waarbij elke
+aanroep ruim onder een veilige 20.000-token-grens blijft.
+
+**Kosten:** de eerste echte run (module 1, cursus 1: 20 lessen, 5 aanroepen — 1 outline + 4
+onderdelen, geen enkel onderdeel hoefde verder opgesplitst) kostte **$0,19** (46.181 input- +
+11.910 output-tokens, gpt-4.1: $2/1M input, $8/1M output). `translate_module.py` print na afloop
+altijd het exacte tokengebruik en de geschatte kosten per aanroep.
+
+**Nog niet gedaan:** cursussen 2-5 en de overige modules van cursus 1 zijn nog niet vertaald — dat
+is een bewuste stop, geen technische beperking (zie de opdracht: exact één module als eerste test,
+voor inhoudelijke beoordeling voordat er meer vertaald wordt).
 
 ## Chat / vragenpaneel — voorstel, niet geïmplementeerd
 
@@ -139,6 +175,10 @@ niet te gokken.
 | `course/<slug>/raw.md` | Gegenereerd door `combine_course.py`, geen bron-bestand. |
 | `data/manifest.json`, `docs/content/manifest.json` | Gegenereerd door `build_manifest.py`/`publish_docs.py`. |
 | `_archive/` | Oude testbestanden, duplicaten, prototype-pagina's. Bewaard maar niet actief. |
+
+`course/<slug>/translated/*.md` is **geen** tijdelijk bestand — dat is de daadwerkelijke
+HackMyStudy-content (het resultaat van de OpenAI-vertaalstap) en hoort dus wél in Git, net als
+`course/<slug>/markdown/` (de brontekst).
 
 ## Bestanden die nooit in Git horen
 

@@ -5,12 +5,13 @@ Coursera) op, laat een LLM elke les herschrijven naar jouw leerstijl (zie
 [prompts/daan_module_prompt.md](prompts/daan_module_prompt.md)), en toont het resultaat in een
 rustige, mobiele reader (`docs/`, gepubliceerd via GitHub Pages).
 
-> **Status:** de webapp toont een cursusoverzicht (alle 5), lesnavigatie per cursus en een echte
-> reader. Cursus 1 (Enterprise Product Management Fundamentals) is verzameld: 28 lessen, 26 als
-> markdown-brontekst beschikbaar. Er is nog **geen enkele les daadwerkelijk vertaald** — de
-> vertaalstap (`generate_module.py`) is bewust nog de oude proof-of-concept; zie
-> [PIPELINE.md](PIPELINE.md#de-vertaalstap-nog-niet-af) voor de openstaande beslissing daarover.
-> Cursussen 2 t/m 5 zijn nog niet verzameld.
+> **Status:** de webapp toont een cursusoverzicht (alle 5), modulenavigatie per cursus en een
+> echte reader. Alle 5 cursussen zijn verzameld met echte modulegrenzen (`data/<slug>/
+> learning_items.json`). Cursus 1 heeft daarnaast markdown-brontekst voor module 1 (20/20 lessen)
+> en **module 1 is als eerste test daadwerkelijk vertaald** naar de Daan-leerstijl (zie
+> [PIPELINE.md](PIPELINE.md#de-vertaalstap)) — te lezen in de webapp. De overige modules van
+> cursus 1 en cursussen 2-5 zijn bewust nog niet vertaald: eerst wordt deze ene module
+> inhoudelijk beoordeeld voordat er verder vertaald wordt.
 
 Zie ook: [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) (wat staat waar) en
 [PIPELINE.md](PIPELINE.md) (hoe de stappen precies in elkaar haken, input/output per script,
@@ -73,7 +74,7 @@ python -m http.server 8000
 ```
 
 en open `http://localhost:8000`. Na elke wijziging aan de content: `python run.py build-manifest`
-gevolgd door `python run.py publish-docs` (kopieert alleen manifest + al-vertaalde lessen naar
+gevolgd door `python run.py publish-docs` (kopieert alleen manifest + al-vertaalde modules naar
 `docs/`, nooit ruwe scrape-data).
 
 ## Belangrijk: wat hoort nooit in Git
