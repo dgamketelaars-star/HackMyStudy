@@ -73,3 +73,7 @@ Voor de volgorde waarin deze scripts elkaar opvolgen: zie [PIPELINE.md](PIPELINE
 | `content/manifest.json` | Gegenereerd door `publish_docs.py` — niet handmatig bewerken. |
 | `content/<cursus-slug>/module-<n>.md` | Gepubliceerde vertaalde modules — niet handmatig bewerken. |
 | `css/style.css` | Het volledige ontwerp: donker, groen accent, mobile-first met laptop-breakpoint. |
+| `.nojekyll` | Leeg bestand — schakelt GitHub Pages' standaard Jekyll-verwerking uit (zie README.md, sectie Deployment). |
+
+`docs/` is de map die GitHub Pages publiceert (repo → Settings → Pages → Deploy from a branch →
+`master` → `/docs`). Geen build-stap: wat hier staat is precies wat online komt.

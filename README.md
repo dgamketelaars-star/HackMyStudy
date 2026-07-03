@@ -77,6 +77,34 @@ en open `http://localhost:8000`. Na elke wijziging aan de content: `python run.p
 gevolgd door `python run.py publish-docs` (kopieert alleen manifest + al-vertaalde modules naar
 `docs/`, nooit ruwe scrape-data).
 
+## Deployment (GitHub Pages)
+
+De webapp is bedoeld voor persoonlijk gebruik (bv. vanaf je telefoon), niet als publieke
+productlancering. Hosting: **GitHub Pages, "Deploy from a branch", bron `/docs` op de
+`master`-branch** — geen build-stap, geen GitHub Actions-workflow nodig, want `docs/` is al
+kant-en-klare statische HTML/CSS/JS.
+
+Instellen (eenmalig, in de GitHub-webinterface): repo → **Settings → Pages** → Source: *Deploy
+from a branch* → Branch: `master`, map: `/docs` → Save. GitHub bouwt de site vervolgens bij elke
+push naar `master` opnieuw.
+
+`docs/.nojekyll` staat erbij zodat GitHub's standaard Jekyll-verwerking wordt overgeslagen — anders
+zou GitHub Pages proberen de `.md`-bestanden onder `docs/content/` als Jekyll-pagina's te
+behandelen in plaats van ze als platte tekst te serveren voor de `fetch()`-aanroepen in de webapp.
+
+**Hoe nieuwe vertaalde modules online komen:** de vertaalpipeline blijft volledig lokaal (scrapen,
+OpenAI-aanroepen). Zodra een nieuwe module lokaal vertaald en gepubliceerd is
+(`run.py build-manifest` + `run.py publish-docs`), commit en push je de wijzigingen in `docs/` —
+GitHub Pages herbouwt daarna automatisch. Er gaat nooit een OpenAI-aanroep of API-key naar de
+browser of naar GitHub Pages zelf; alleen de al-vertaalde platte markdown-bestanden.
+
+Alle links/paden in `docs/` zijn relatief (geen absolute `/pad`-verwijzingen), dus de site werkt
+zowel lokaal (`http://localhost:8000/index.html`) als onder het GitHub Pages-subpad
+(`https://<gebruiker>.github.io/<repo-naam>/index.html`) zonder aanpassingen. Cursus-/module-URL's
+gebruiken query-parameters (`course.html?course=...`, `module.html?course=...&module=...`), geen
+client-side routing — directe navigatie (bookmark, gedeelde link, homescreen-icoon) laadt dus
+altijd het juiste, bestaande HTML-bestand, zonder 404's of speciale server-configuratie.
+
 ## Belangrijk: wat hoort nooit in Git
 
 - `browser-profile/` — bevat je live Coursera-sessie/cookies/wachtwoorden
