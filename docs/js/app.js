@@ -1,10 +1,13 @@
 // Cursusoverzicht: toont elke cursus uit manifest.json als kaart. Cursussen
-// zonder verzamelde lessen (status "coming_soon") zijn zichtbaar maar niet
+// zonder verzamelde modules (status "coming_soon") zijn zichtbaar maar niet
 // klikbaar — zo zie je altijd dat het hele certificaat 5 cursussen telt.
+// Voortgang wordt geteld in modules, niet losse lessen: de vertaalstap werkt
+// op moduleniveau (zie PIPELINE.md).
 
 function renderCourseCard(course) {
-    const total = course.lessons.length;
-    const translated = course.lessons.filter((l) => l.translated).length;
+    const total = course.modules.length;
+    const translated = course.modules.filter((m) => m.translated).length;
+    const totalLessons = course.modules.reduce((sum, m) => sum + m.lesson_count, 0);
     const isAvailable = course.status === "available";
     const pct = total > 0 ? Math.round((translated / total) * 100) : 0;
 
@@ -14,7 +17,7 @@ function renderCourseCard(course) {
 
     const meta = isAvailable
         ? `<div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
-           <p class="course-card-meta">${total} lessen gevonden</p>`
+           <p class="course-card-meta">${total} modules, ${totalLessons} lessen</p>`
         : `<p class="course-card-meta">Nog niet verzameld</p>`;
 
     const tag = isAvailable ? "a" : "div";

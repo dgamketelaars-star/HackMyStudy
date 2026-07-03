@@ -1,13 +1,13 @@
-"""Publiceert de manifest + vertaalde lessen naar docs/, zodat de (statische,
+"""Publiceert de manifest + vertaalde modules naar docs/, zodat de (statische,
 via GitHub Pages gehoste) webapp ze kan tonen.
 
 docs/ is de enige map die GitHub Pages serveert — content in data/ of course/
 is daar niet vanaf bereikbaar. Dit script kopieert dus welbewust:
-- data/manifest.json          -> docs/content/manifest.json
-- course/<slug>/translated/*  -> docs/content/<slug>/*
+- data/manifest.json                   -> docs/content/manifest.json
+- course/<slug>/translated/module-N.md -> docs/content/<slug>/module-N.md
 
 Bevat geen ruwe scrape-data (html/text) en geen browser-/sessiebestanden —
-alleen het manifest en al-vertaalde lesmarkdown.
+alleen het manifest en al-vertaalde modulemarkdown.
 """
 
 import json
@@ -31,15 +31,14 @@ def publish():
         src_dir = config.translated_dir(slug)
         dest_dir = config.DOCS_CONTENT_DIR / slug
 
-        translated_lessons = [lesson for lesson in course["lessons"] if lesson["translated"]]
-        if not translated_lessons:
+        translated_modules = [m for m in course["modules"] if m["translated"]]
+        if not translated_modules:
             continue
 
         dest_dir.mkdir(parents=True, exist_ok=True)
-        for lesson in translated_lessons:
-            src = src_dir / f"{lesson['slug']}.md"
-            dest = dest_dir / f"{lesson['slug']}.md"
-            shutil.copyfile(src, dest)
+        for module in translated_modules:
+            filename = f"module-{module['number']}.md"
+            shutil.copyfile(src_dir / filename, dest_dir / filename)
             published += 1
 
     return published
@@ -48,4 +47,4 @@ def publish():
 if __name__ == "__main__":
     count = publish()
     print(f"✅ manifest gepubliceerd naar {config.DOCS_MANIFEST_JSON}")
-    print(f"✅ {count} vertaalde les(sen) gepubliceerd naar docs/content/")
+    print(f"✅ {count} vertaalde module(s) gepubliceerd naar docs/content/")

@@ -13,6 +13,6 @@ function findCourse(manifest, slug) {
     return manifest.courses.find((c) => c.slug === slug);
 }
 
-function findLesson(course, slug) {
-    return course.lessons.find((l) => l.slug === slug);
+function findModule(course, number) {
+    return course.modules.find((m) => m.number === number);
 }

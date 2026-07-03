@@ -9,6 +9,8 @@ opzettelijk NIET samengevoegd — zie PIPELINE.md voor de toelichting.
 import re
 import unicodedata
 
+MODULE_TITLE_PATTERN = re.compile(r"Module (\d)\n([^\n]+)\n")
+
 
 def slugify(text):
     """Zet een titel om in een URL-veilige slug, bv. voor lesson-ids in de
@@ -31,6 +33,20 @@ def course_slug_from_url(url):
     """
     match = re.search(r"/learn/([^/]+)/", url)
     return match.group(1) if match else None
+
+
+def guess_module_title(markdown_dir, module_number):
+    """Zoekt de echte moduletitel in het zijbalkmenu dat in sommige (video-)
+    scrapes is meegekomen (zie translate_module.py voor de achtergrond).
+    Geeft None als niets gevonden wordt (bv. cursus nog niet gescraped)."""
+    if not markdown_dir.exists():
+        return None
+    for f in markdown_dir.glob("*.md"):
+        text = f.read_text(encoding="utf-8")
+        for match in MODULE_TITLE_PATTERN.finditer(text):
+            if int(match.group(1)) == module_number:
+                return match.group(2).strip()
+    return None
 
 
 def normalize_title(text):

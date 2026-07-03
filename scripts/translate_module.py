@@ -48,7 +48,7 @@ import time
 from openai import OpenAI, RateLimitError
 
 import config
-from scraping_utils import normalize_title
+from scraping_utils import normalize_title, guess_module_title
 
 MODEL = "gpt-4.1"
 MIN_COVERAGE = 0.9  # onder deze dekking stopt het script vóór de OpenAI-aanroep
@@ -60,7 +60,6 @@ TRAILING_FOOTER = re.compile(r"\nTranscriptie\nOpmerkingen\nBestanden\s*$")
 LABEL_LINE = re.compile(r"^Speel video af vanaf[^\n]*\n", re.MULTILINE)
 BARE_TIMESTAMP = re.compile(r"^\d+:\d+$", re.MULTILINE)
 INSTRUCTION_HEADER = re.compile(r"Interactief transcript.*?(?=Speel video af vanaf)", re.DOTALL)
-MODULE_TITLE_PATTERN = re.compile(r"Module (\d)\n([^\n]+)\n")
 
 _tiktoken_enc = None
 
@@ -95,17 +94,6 @@ def clean_lesson_body(text, title):
     tail = re.sub(r"[ \t]+", " ", tail)
     tail = re.sub(r"\n{2,}", "\n", tail).strip()
     return f"{title}\n\n{tail}"
-
-
-def guess_module_title(slug, module_number):
-    """Zoekt de echte moduletitel in het zijbalkmenu dat in sommige (video-)
-    scrapes is meegekomen. Valt terug op 'Module N' als niets gevonden wordt."""
-    for f in config.markdown_dir(slug).glob("*.md"):
-        text = f.read_text(encoding="utf-8")
-        for match in MODULE_TITLE_PATTERN.finditer(text):
-            if int(match.group(1)) == module_number:
-                return match.group(2).strip()
-    return f"Module {module_number}"
 
 
 def load_module_items(slug, module_number):
@@ -297,7 +285,7 @@ def main():
         raise SystemExit(f"Geen items met module={module_number} gevonden voor {slug}.")
 
     matched, missing = match_and_clean(items, config.markdown_dir(slug))
-    module_title = guess_module_title(slug, module_number)
+    module_title = guess_module_title(config.markdown_dir(slug), module_number) or f"Module {module_number}"
 
     tokens_source = sum(count_tokens(l["text"]) for l in matched)
     tokens_prompt = count_tokens(prompt_text)
