@@ -74,6 +74,7 @@ a {
     color: var(--text);
     font-weight: 700;
     font-size: 1.05rem;
+    margin-bottom: 12px
 }
 
 /* --- Hero (overzichtspagina) --- */
