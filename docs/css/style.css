@@ -85,7 +85,7 @@ a {
 .hero h1 {
     font-size: 1.9rem;
     line-height: 1.2;
-    margin: 0 0 8px;
+    margin: 0 0 2px;
     text-wrap: balance;
 }
 
@@ -93,7 +93,7 @@ a {
     color: var(--text-muted);
     margin: 0;
     font-size: 1.02rem;
-    line-height: 1.55;
+    line-height: 1.35;
     max-width: 46ch;
 }
 
