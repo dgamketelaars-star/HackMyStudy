@@ -19,6 +19,14 @@
     box-sizing: border-box;
 }
 
+/* De browser-standaard voor [hidden] is display:none, maar heeft dezelfde
+   specificiteit als een class-selector — bij een latere .audio-bar/.qa-panel
+   {display:flex}-regel wint dan de laatst gedefinieerde regel, niet [hidden].
+   Deze regel dwingt [hidden] altijd te winnen, ongeacht andere display-regels. */
+[hidden] {
+    display: none !important;
+}
+
 html {
     -webkit-text-size-adjust: 100%;
 }
