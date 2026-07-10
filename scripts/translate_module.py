@@ -27,6 +27,13 @@ Werkwijze (module-aware, geen per-les vertaling):
    — de indeling zelf blijft die van fase 1's outline).
 6. De onderdelen worden samengevoegd tot één module-markdown-bestand.
 
+Progressive English terminology immersion: elke fase-2-aanroep krijgt de huidige
+term-familiarity-ledger (data/term_familiarity.json, cursusoverstijgend) mee, en
+levert zelf een machineleesbaar ===TERMEN=== blok terug met welke vaktermen
+gebruikt zijn en in welke status (nieuw/in_opbouw/bekend) — dat blok wordt
+gestript vóór opslag en gebruikt om de ledger bij te werken. Zie
+prompts/daan_module_prompt.md voor de volledige instructie aan het model.
+
 Waarom niet gewoon de hele module in één aanroep? Dat was het eerste ontwerp
 (zie git-historie), maar het account waarmee dit draait heeft een OpenAI
 rate limit van 30.000 tokens/minuut voor gpt-4.1 — ruim onder de ~51.000
@@ -60,8 +67,78 @@ TRAILING_FOOTER = re.compile(r"\nTranscriptie\nOpmerkingen\nBestanden\s*$")
 LABEL_LINE = re.compile(r"^Speel video af vanaf[^\n]*\n", re.MULTILINE)
 BARE_TIMESTAMP = re.compile(r"^\d+:\d+$", re.MULTILINE)
 INSTRUCTION_HEADER = re.compile(r"Interactief transcript.*?(?=Speel video af vanaf)", re.DOTALL)
+TERMS_BLOCK = re.compile(r"```?\s*===TERMEN===\s*(.*?)\s*===EINDE TERMEN===\s*```?", re.DOTALL)
+VALID_TERM_STATUSES = {"nieuw", "in_opbouw", "bekend"}
 
 _tiktoken_enc = None
+
+
+def load_term_ledger():
+    if not config.TERM_LEDGER_JSON.exists():
+        return {}
+    return json.loads(config.TERM_LEDGER_JSON.read_text(encoding="utf-8"))
+
+
+def save_term_ledger(ledger):
+    config.DATA_DIR.mkdir(parents=True, exist_ok=True)
+    config.TERM_LEDGER_JSON.write_text(
+        json.dumps(ledger, ensure_ascii=False, indent=2, sort_keys=True),
+        encoding="utf-8"
+    )
+
+
+def format_ledger_for_prompt(ledger):
+    if not ledger:
+        return "(nog geen vaktermen eerder geïntroduceerd — dit is de allereerste keer)"
+    lines = []
+    for key in sorted(ledger):
+        entry = ledger[key]
+        lines.append(f"- {entry['en']} ({entry['nl']}): status = {entry['status']}, eerder {entry['uses']}x gebruikt")
+    return "\n".join(lines)
+
+
+def parse_and_strip_terms(text, module_ref):
+    """Haalt het ===TERMEN=== blok uit de modeloutput, geeft (schone_tekst, updates)
+    terug. `updates` is een lijst (en, nl, status) zoals het model ze rapporteerde —
+    de ledger zelf wordt hier niet bijgewerkt, dat doet de aanroeper."""
+    match = TERMS_BLOCK.search(text)
+    if not match:
+        return text.strip(), []
+
+    clean_text = (text[:match.start()] + text[match.end():]).strip()
+    updates = []
+    for line in match.group(1).strip().splitlines():
+        line = line.strip()
+        if not line or "|" not in line:
+            continue
+        parts = [p.strip() for p in line.split("|")]
+        if len(parts) != 3:
+            continue
+        en, nl, status = parts
+        status = status.lower()
+        if status not in VALID_TERM_STATUSES or not en:
+            continue
+        updates.append((en, nl, status))
+    return clean_text, updates
+
+
+def apply_term_updates(ledger, updates, module_ref):
+    for en, nl, status in updates:
+        key = en.lower()
+        if key in ledger:
+            ledger[key]["status"] = status
+            ledger[key]["uses"] += 1
+            if module_ref not in ledger[key]["modules_seen"]:
+                ledger[key]["modules_seen"].append(module_ref)
+        else:
+            ledger[key] = {
+                "en": en,
+                "nl": nl,
+                "status": status,
+                "uses": 1,
+                "modules_seen": [module_ref],
+            }
+    return ledger
 
 
 def count_tokens(text):
@@ -205,11 +282,12 @@ def format_outline_summary(outline):
     return "\n".join(f"{i + 1}. {s['title']}" for i, s in enumerate(outline))
 
 
-def write_section_body(client, prompt_text, lessons, outline, section_index, module_title, usage_log, part_label=""):
+def write_section_body(client, prompt_text, lessons, outline, section_index, module_title, usage_log, ledger, module_ref, part_label=""):
     section = outline[section_index]
     lesson_subset = [lessons[n - 1] for n in section["source_lessons"]] if section["source_lessons"] else []
     source_text = "\n\n---\n\n".join(f"### {lesson['title']}\n\n{lesson['text']}" for lesson in lesson_subset)
     outline_summary = format_outline_summary(outline)
+    ledger_text = format_ledger_for_prompt(ledger)
 
     part_note = f" (deel {part_label})" if part_label else ""
     wrapper = f"""Je hebt module "{module_title}" geanalyseerd en de volgende leerroute bepaald:
@@ -225,14 +303,21 @@ niet op zichzelf. Gebruik uitsluitend kennis uit de bronlessen hieronder:
 verzin geen feiten, tools of oefeningen die niet in de bron staan. Begin je
 antwoord direct met de inhoud (geen titel-heading — die voeg ik zelf toe).
 
+VAKTERMEN DIE IK AL EERDER BEN TEGENGEKOMEN (pas progressive terminology
+immersion hierop toe, zie je instructies):
+{ledger_text}
+
 BRONLESSEN VOOR DIT ONDERDEEL:
 {source_text}
 """
     label = f"fase2-onderdeel-{section_index + 1}" + (f"-{part_label}" if part_label else "")
-    return call_openai(client, prompt_text, wrapper, usage_log, label)
+    response_text = call_openai(client, prompt_text, wrapper, usage_log, label)
+    clean_text, updates = parse_and_strip_terms(response_text, module_ref)
+    apply_term_updates(ledger, updates, module_ref)
+    return clean_text
 
 
-def write_section_chunked(client, prompt_text, lessons, outline, section_index, module_title, usage_log):
+def write_section_chunked(client, prompt_text, lessons, outline, section_index, module_title, usage_log, ledger, module_ref):
     """Schrijft één outline-onderdeel. Als de bronlessen van dit onderdeel te
     groot zijn voor één veilige aanroep, wordt het onderdeel in kleinere
     lesnummer-batches opgeknipt en de resultaten samengevoegd — de indeling
@@ -248,7 +333,7 @@ def write_section_chunked(client, prompt_text, lessons, outline, section_index, 
         return sum(count_tokens(lessons[n - 1]["text"]) for n in ids) + prompt_tokens + 800
 
     if subset_tokens(lesson_ids) <= SAFE_INPUT_TOKENS:
-        return write_section_body(client, prompt_text, lessons, outline, section_index, module_title, usage_log)
+        return write_section_body(client, prompt_text, lessons, outline, section_index, module_title, usage_log, ledger, module_ref)
 
     # te groot: splits in de helft, herhaal recursief
     mid = len(lesson_ids) // 2
@@ -261,7 +346,7 @@ def write_section_chunked(client, prompt_text, lessons, outline, section_index, 
         sub_outline[section_index] = sub_section
         label = f"{i}/{len(batches)}"
         print(f"      onderdeel te groot, deel {label} (lessen {batch}) ...")
-        bodies.append(write_section_body(client, prompt_text, lessons, sub_outline, section_index, module_title, usage_log, part_label=label))
+        bodies.append(write_section_body(client, prompt_text, lessons, sub_outline, section_index, module_title, usage_log, ledger, module_ref, part_label=label))
     return "\n\n".join(bodies)
 
 
@@ -349,12 +434,18 @@ def main():
             "source_lessons": unassigned,
         })
 
+    module_ref = f"{slug}/module-{module_number}"
+    ledger = load_term_ledger()
+    ledger_before = json.loads(json.dumps(ledger))  # diepe kopie voor het diff-rapport
+
     print(f"\n===== FASE 2: onderdelen schrijven (max {len(outline)} aanroepen, meer bij automatisch opsplitsen) =====")
     section_bodies = []
     for i in range(len(outline)):
         print(f"   [{i + 1}/{len(outline)}] {outline[i]['title']} ...")
-        body = write_section_chunked(client, prompt_text, matched, outline, i, module_title, usage_log)
+        body = write_section_chunked(client, prompt_text, matched, outline, i, module_title, usage_log, ledger, module_ref)
         section_bodies.append(body)
+
+    save_term_ledger(ledger)
 
     final_md = f"# {module_title}\n\n"
     for section, body in zip(outline, section_bodies):
@@ -375,6 +466,20 @@ def main():
         print(f"   {label}: input={usage.input_tokens}, output={usage.output_tokens}")
     print(f"Totaal input tokens:  {total_input}")
     print(f"Totaal output tokens: {total_output}")
+
+    new_terms = sorted(k for k in ledger if k not in ledger_before)
+    changed_terms = sorted(
+        k for k in ledger
+        if k in ledger_before and ledger_before[k]["status"] != ledger[k]["status"]
+    )
+    print(f"\nTerm-ledger bijgewerkt: {config.TERM_LEDGER_JSON}")
+    if new_terms:
+        print(f"   Nieuw geïntroduceerd: {', '.join(ledger[k]['en'] for k in new_terms)}")
+    if changed_terms:
+        for k in changed_terms:
+            print(f"   {ledger[k]['en']}: {ledger_before[k]['status']} -> {ledger[k]['status']}")
+    if not new_terms and not changed_terms:
+        print("   (geen wijzigingen)")
     # gpt-4.1 prijzen: $2.00 / 1M input, $8.00 / 1M output (OpenAI, april 2025)
     cost = (total_input / 1_000_000) * 2.00 + (total_output / 1_000_000) * 8.00
     print(f"Geschatte kosten (gpt-4.1: $2/1M input, $8/1M output): ${cost:.4f}")

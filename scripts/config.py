@@ -36,6 +36,10 @@ MANIFEST_JSON = DATA_DIR / "manifest.json"
 DOCS_CONTENT_DIR = DOCS_DIR / "content"
 DOCS_MANIFEST_JSON = DOCS_CONTENT_DIR / "manifest.json"
 
+# Term-familiarity-ledger voor progressive English terminology immersion
+# (cursusoverstijgend — zie translate_module.py en PIPELINE.md).
+TERM_LEDGER_JSON = DATA_DIR / "term_familiarity.json"
+
 
 def course_data_dir(slug: str) -> Path:
     return DATA_DIR / slug
