@@ -132,39 +132,112 @@ aanroep ruim onder een veilige 20.000-token-grens blijft.
 
 **Kosten:** de eerste echte run (module 1, cursus 1: 20 lessen, 5 aanroepen — 1 outline + 4
 onderdelen, geen enkel onderdeel hoefde verder opgesplitst) kostte **$0,19** (46.181 input- +
-11.910 output-tokens, gpt-4.1: $2/1M input, $8/1M output). `translate_module.py` print na afloop
-altijd het exacte tokengebruik en de geschatte kosten per aanroep.
+11.910 output-tokens, gpt-4.1: $2/1M input, $8/1M output). De hergeneratie na de vier upgrades
+hieronder (visuals + progressive terminology immersion) kostte vergelijkbaar weinig — zie de
+git-commit van die run voor het exacte bedrag. `translate_module.py` print na afloop altijd het
+exacte tokengebruik en de geschatte kosten per aanroep.
 
 **Nog niet gedaan:** cursussen 2-5 en de overige modules van cursus 1 zijn nog niet vertaald — dat
 is een bewuste stop, geen technische beperking (zie de opdracht: exact één module als eerste test,
 voor inhoudelijke beoordeling voordat er meer vertaald wordt).
 
-## Chat / vragenpaneel — voorstel, niet geïmplementeerd
+## Visuals (Mermaid + tabellen)
 
-Vraag: kan een chatbot die vragen beantwoordt over de lesinhoud, veilig binnen de huidige
-architectuur? **Niet zonder een architectuurkeuze te maken** — hieronder waarom, en de opties.
+`prompts/daan_module_prompt.md` instrueert het model om alléén een visual toe te voegen wanneer die
+de cognitieve weerstand echt verlaagt (processen, cycli, hiërarchieën, concept maps, vergelijkingen)
+— nooit decoratief. Diagrammen worden als ` ```mermaid ` -codeblok in de module-markdown gezet;
+vergelijkingen als gewone Markdown-tabel.
 
-`docs/` is een statische site op GitHub Pages: platte bestanden, geen server, geen manier om een
-geheim (de OpenAI API key) te verbergen. Een "vraag het de AI"-knop die rechtstreeks vanuit de
-browser naar OpenAI belt, zou die key in het gepubliceerde JavaScript moeten meesturen — dan kan
-iedereen die de site bezoekt de key uitlezen en op jouw kosten gebruiken. Dat is een reëel
-security/kostenrisico, geen theoretisch probleem.
+De webapp (`docs/js/visuals.js`) rendert dit: marked.js zet een ` ```mermaid `-blok om in
+`<pre><code class="language-mermaid">`, wat `renderVisuals()` omzet naar het `<div class="mermaid">`
+dat Mermaid zelf verwacht, waarna `mermaid.run()` het tekent (donker thema, past bij de site).
+Markdown-tabellen hebben geen speciale behandeling nodig — marked.js rendert ze al als `<table>`;
+`docs/css/style.css` stylet ze (horizontaal scrollbaar op mobiel, geen tabel die het scherm afbreekt).
 
-Opties (geen van alle nu geïmplementeerd):
+Bewust buiten scope voor nu: echte tool-interface-"screenshots". Dat zou ofwel een betaalde
+image-generation-API vergen (niet toegestaan zonder toestemming) ofwel een LLM die betrouwbaar
+HTML/CSS-mockups van specifieke tools natekent (te fragiel om nu te vertrouwen). De prompt
+instrueert het model expliciet om dat niet te proberen.
 
-1. **Kleine backend/proxy** (bv. een gratis Cloudflare Worker of Vercel-functie) die de key
-   serverside bewaart en de vraag doorstuurt naar OpenAI. Meest flexibel, maar wel nieuwe
-   infrastructuur om te beheren/hosten — een echte architectuurstap.
-2. **Alleen lokaal draaien**: de chat werkt alleen als je HackMyStudy lokaal serveert (niet via
-   de gepubliceerde GitHub Pages-URL) met de key in je eigen omgevingsvariabele. Geen nieuwe
-   infrastructuur, maar de chat is dan niet overal beschikbaar waar je ook leest (bv. niet op je
-   telefoon onderweg, tenzij je zelf iets host).
-3. **Uitstellen tot na spoor 1**: eerst de content-flow en vertaling afronden, chat als los
-   vervolgtraject met een bewuste keuze tussen optie 1 en 2.
+## Progressive English terminology immersion
 
-Dit valt buiten wat ik zonder jouw akkoord zou moeten beslissen — het is precies het soort
-architectuurkeuze (nieuwe infrastructuur, of een bewuste beperking) waar de opdracht om vraagt
-niet te gokken.
+`data/term_familiarity.json` is de cursusoverstijgende ledger: per vakterm (Engelse term als key)
+staat de Nederlandse vertaling, de huidige status (`nieuw` / `in_opbouw` / `bekend`), hoe vaak hij
+al gebruikt is, en in welke module(s). Elke fase-2-aanroep in `translate_module.py` krijgt deze
+ledger als tekst mee in de prompt, en levert zelf een `===TERMEN===`-blok terug met welke termen
+gebruikt zijn en in welke status — `parse_and_strip_terms()` haalt dat blok eruit (de lezer ziet
+het nooit), `apply_term_updates()` verwerkt het in de ledger, die na de hele module-run wordt
+opgeslagen.
+
+Bewust géén mechanische regel ("na 3 keer altijd Engels"): de prompt instrueert het model om zelf
+te beoordelen of de overgang hier natuurlijk aanvoelt, gebaseerd op complexiteit/belang van de term
+— expliciet gevraagd in de opdracht. De ledger is de *herinnering*, niet de beslisser.
+
+Omdat de ledger cursusoverstijgend is (niet per cursus, laat staan per module), bouwt elke nieuw
+vertaalde module voort op wat eerder al écht gegenereerd is — niet op wat toevallig al bestond vóór
+deze upgrade. Cursus 1 module 1 had vóór de hergeneratie nul Engelse vaktermen; na de hergeneratie
+staat de ledger aan het begin van zijn opbouw, en elke volgende module (2-5, of cursus 2-5) bouwt
+daarop voort.
+
+## Luistermodus (audio)
+
+Browser-native Web Speech API (`SpeechSynthesis`), bewust gekozen boven een betaalde TTS-dienst:
+gratis, werkt in vrijwel elke moderne mobiele en desktopbrowser, vereist geen server (dus compatibel
+met GitHub Pages als statische site), stuurt niets naar een nieuwe derde partij, en heeft geen
+onderhoud nodig. Zie "Bekende beperkingen" hieronder voor de reële nadelen van deze keuze.
+
+`docs/js/audio.js` bevat de speech-preparation-laag (`prepareForSpeech()`): verwijdert
+TOOLVERKENNING-markers (de inhoud eromheen blijft gewoon staan), vervangt Mermaid-blokken en
+tabellen door een korte gesproken verwijzing ("Zie het schema/de tabel in de tekst" — die worden
+niet letterlijk voorgelezen), en strip alle Markdown-opmaaktekens. Geverifieerd tegen de echte
+module-1-tekst: geen `===`, `##`, `**`, code-fences of tabel-pipes overleven het, en de tekst blijft
+inhoudelijk vrijwel compleet (~4% korter, puur opmaak-overhead).
+
+De schone tekst wordt in zinsgerichte stukken van max ~220 tekens geknipt (`splitIntoSpeechChunks`)
+en sequentieel afgespeeld via `SpeechSynthesisUtterance`. Bediening: play/pause, snelheid
+(0,75×-2×), "↺15" en automatisch onthouden waar je gebleven bent (`localStorage`, per
+cursus+module).
+
+**Bekende beperkingen (eerlijk, niet verzwegen):**
+- **"↺15 seconden" is een schatting**, geen frame-accurate terugspoelen — de Web Speech API geeft
+  geen echte afspeelpositie, alleen `onboundary`-events. De schatting gebruikt een vaste
+  tekens-per-seconde-aanname (gecorrigeerd voor de ingestelde snelheid).
+- **Stemkwaliteit en -beschikbaarheid voor Nederlands verschilt per apparaat/besturingssysteem**
+  (iOS gebruikt Siri-stemmen, Android de Google-TTS-stemmen, sommige Linux-browsers hebben geen
+  Nederlandse stem). Zonder Nederlandse stem valt de browser terug op zijn standaardstem.
+- Sommige browsers pauzeren `speechSynthesis` als het tabblad lang op de achtergrond staat — een
+  bekende browser-eigenaardigheid, niet iets wat vanuit JavaScript op te lossen is.
+- Niet getest op een echt mobiel toestel (alleen headless Chromium) — zie "Wat jij nu moet testen"
+  in het eindrapport.
+
+## Interactief vragen
+
+De vertaalde tekst stelt regelmatig een directe vraag ("Snap je waarom...?") zonder dat de lezer
+daar iets mee kon — dat is nu opgelost met een altijd-beschikbaar vragenpaneel tijdens het lezen
+(`docs/js/qa.js`): een zwevende knop opent een paneel met drie snelle acties (leg verder uit / geef
+een praktijkvoorbeeld / leg visueel uit) plus een vrij tekstveld.
+
+**Context die wordt meegestuurd:** cursustitel, moduletitel, en — via een `IntersectionObserver` op
+de `<h2>`-koppen — alleen de tekst van het onderdeel waar de lezer waarschijnlijk nu leest (niet de
+hele module: dat zou nodeloos veel tokens kosten voor een vraag die meestal over het huidige
+onderdeel gaat), plus de laatste paar berichten van het gesprek voor vervolgvragen.
+
+**Waarom dit niet zomaar naar OpenAI belt vanuit de browser:** `docs/` is een statische GitHub
+Pages-site zonder server — een API-key in het gepubliceerde JavaScript zou voor iedereen die de
+site bezoekt uitleesbaar zijn. Dat probleem was al gedocumenteerd vóór deze upgrade en blijft
+onveranderd waar.
+
+**Wat nu wél werkt, zonder nieuw account:** `scripts/qa_server.py` is een lokale
+(127.0.0.1-only, dus nooit vanaf het netwerk bereikbaar) server die dezelfde `OPENAI_API_KEY`
+hergebruikt als de vertaalpipeline. Draai je deze terwijl je lokaal leest, dan werkt het
+vragenpaneel volledig — geverifieerd met een echte aanroep (zie eindrapport). De webapp probeert
+dit endpoint automatisch (met een timeout van 1,2s) en toont een eerlijke melding als de server niet
+draait, in plaats van een nep-antwoord.
+
+**Wat nog een echte keuze van jou vereist (niet zelf gedaan — nieuw account + credentials):**
+lezen op je telefoon, onderweg, vereist een gehoste backend (de lokale server is dan niet
+bereikbaar). `deploy/cloudflare-worker-qa.js` is klaar om te deployen zodra je dat wilt — zie de
+instructies bovenin dat bestand. Dit is bewust niet zelf aangemaakt/geactiveerd.
 
 ## Bestanden die tijdelijk/cache zijn
 

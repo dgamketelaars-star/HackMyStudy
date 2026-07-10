@@ -6,12 +6,26 @@ Coursera) op, laat een LLM elke les herschrijven naar jouw leerstijl (zie
 rustige, mobiele reader (`docs/`, gepubliceerd via GitHub Pages).
 
 > **Status:** de webapp toont een cursusoverzicht (alle 5), modulenavigatie per cursus en een
-> echte reader. Alle 5 cursussen zijn verzameld met echte modulegrenzen (`data/<slug>/
-> learning_items.json`). Cursus 1 heeft daarnaast markdown-brontekst voor module 1 (20/20 lessen)
-> en **module 1 is als eerste test daadwerkelijk vertaald** naar de Daan-leerstijl (zie
+> echte reader met visuals, luistermodus en een interactief vragenpaneel. Alle 5 cursussen zijn
+> verzameld met echte modulegrenzen (`data/<slug>/learning_items.json`). Cursus 1 heeft daarnaast
+> markdown-brontekst voor module 1 (20/20 lessen) en **module 1 is daadwerkelijk vertaald** naar
+> de Daan-leerstijl, inclusief visuals en progressive terminology immersion (zie
 > [PIPELINE.md](PIPELINE.md#de-vertaalstap)) — te lezen in de webapp. De overige modules van
-> cursus 1 en cursussen 2-5 zijn bewust nog niet vertaald: eerst wordt deze ene module
-> inhoudelijk beoordeeld voordat er verder vertaald wordt.
+> cursus 1 en cursussen 2-5 zijn bewust nog niet vertaald.
+
+## Wat de reader kan
+
+- **Visuals waar ze helpen** — Mermaid-diagrammen voor processen/cycli/hiërarchieën, tabellen voor
+  vergelijkingen. Geen decoratieve plaatjes; de vertaalpipeline beslist per onderwerp of een visual
+  echt iets toevoegt.
+- **Luistermodus** — module hardop laten voorlezen (browser-eigen, geen server nodig): play/pause,
+  ↺15s, snelheid, onthoudt waar je gebleven bent.
+- **Interactief vragen stellen** — een vragenpaneel dat altijd beschikbaar is tijdens het lezen,
+  met snelle acties en een vrij tekstveld. Vereist lokaal `python scripts/qa_server.py` (zie
+  [PIPELINE.md](PIPELINE.md#interactief-vragen)) — zonder die server toont het paneel een eerlijke
+  melding in plaats van een nep-antwoord.
+- **Progressive English terminology immersion** — vaktermen schuiven geleidelijk van Nederlands
+  naar Engels naarmate je ze vaker tegenkomt, cursusoverstijgend bijgehouden.
 
 Zie ook: [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) (wat staat waar) en
 [PIPELINE.md](PIPELINE.md) (hoe de stappen precies in elkaar haken, input/output per script,
@@ -76,6 +90,21 @@ python -m http.server 8000
 en open `http://localhost:8000`. Na elke wijziging aan de content: `python run.py build-manifest`
 gevolgd door `python run.py publish-docs` (kopieert alleen manifest + al-vertaalde modules naar
 `docs/`, nooit ruwe scrape-data).
+
+## Interactief vragen lokaal gebruiken
+
+Het vragenpaneel in de reader heeft een backend nodig die je `OPENAI_API_KEY` gebruikt. Draai
+lokaal, in een los terminalvenster:
+
+```bash
+python scripts/qa_server.py
+```
+
+Dit start een server op `http://127.0.0.1:8765` — alleen bereikbaar vanaf je eigen machine, geen
+nieuw account nodig. Laat hem draaien terwijl je de webapp (lokaal of de gepubliceerde
+GitHub Pages-site) open hebt; het vragenpaneel vindt hem vanzelf. Voor gebruik onderweg (vanaf je
+telefoon, zonder dat je laptop aanstaat) is een gehoste variant nodig — zie
+[PIPELINE.md](PIPELINE.md#interactief-vragen) voor de voorbereide (niet-geactiveerde) optie.
 
 ## Deployment (GitHub Pages)
 
