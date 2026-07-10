@@ -18,14 +18,49 @@
         <h1>Laden…</h1>
     </div>
 
+    <div class="audio-bar" id="audio-bar" hidden>
+        <button class="audio-btn audio-play" id="audio-play-btn" aria-label="Afspelen">▶</button>
+        <button class="audio-btn" id="audio-back-btn" aria-label="15 seconden terug">↺15</button>
+        <select class="audio-rate" id="audio-rate-select" aria-label="Afspeelsnelheid">
+            <option value="0.75">0,75×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.25">1,25×</option>
+            <option value="1.5">1,5×</option>
+            <option value="2">2×</option>
+        </select>
+        <span class="audio-progress" id="audio-progress"></span>
+    </div>
+
     <div class="reader-content" id="reader-content"></div>
 
     <div class="reader-nav" id="reader-nav"></div>
 
 </div>
 
+<div class="qa-panel" id="qa-panel" hidden>
+    <div class="qa-panel-header">
+        <span>Stel een vraag</span>
+        <button class="qa-close" id="qa-close-btn" aria-label="Sluiten">✕</button>
+    </div>
+    <div class="qa-messages" id="qa-messages"></div>
+    <div class="qa-quick-actions" id="qa-quick-actions">
+        <button class="qa-quick-btn" data-question="Leg dit verder uit.">Leg verder uit</button>
+        <button class="qa-quick-btn" data-question="Geef een praktijkvoorbeeld, het liefst met een van mijn eigen projecten zoals HackMyStudy.">Praktijkvoorbeeld</button>
+        <button class="qa-quick-btn" data-question="Leg dit visueel/stap voor stap uit, alsof ik het moet kunnen tekenen.">Leg visueel uit</button>
+    </div>
+    <form class="qa-input-row" id="qa-form">
+        <input type="text" id="qa-input" placeholder="Typ je eigen vraag…" autocomplete="off">
+        <button type="submit" class="qa-send-btn">Stuur</button>
+    </form>
+</div>
+<button class="qa-fab" id="qa-fab-btn" aria-label="Stel een vraag" hidden>?</button>
+
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 <script src="js/manifest.js"></script>
+<script src="js/visuals.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/qa.js"></script>
 <script src="js/module.js"></script>
 
 </body>

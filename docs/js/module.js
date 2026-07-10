@@ -76,6 +76,17 @@ async function renderModule() {
             // weergave door een leidende "# Titel"-regel uit de markdown te strippen
             const withoutLeadingTitle = markdown.replace(/^#[^\n]*\n+/, "");
             contentEl.innerHTML = marked.parse(withoutLeadingTitle);
+            await renderVisuals(contentEl);
+
+            const storageKey = `hackmystudy-audio-${courseSlug}-${module.number}`;
+            initAudioBar(markdown, storageKey);
+            initQaPanel({
+                courseSlug,
+                courseTitle: course.title,
+                moduleNumber: module.number,
+                moduleTitle: module.title,
+                moduleMarkdown: markdown,
+            });
         }
     }
 
