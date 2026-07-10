@@ -1,0 +1,56 @@
+{
+  "key performance indicators": {
+    "en": "key performance indicators",
+    "modules_seen": [
+      "microsoft-enterprise-product-management-fundamentals/module-1"
+    ],
+    "nl": "KPI’s (resultaatmeting)",
+    "status": "in_opbouw",
+    "uses": 4
+  },
+  "key performance indicators, kpi’s": {
+    "en": "key performance indicators, KPI’s",
+    "modules_seen": [
+      "microsoft-enterprise-product-management-fundamentals/module-1"
+    ],
+    "nl": "resultaatmeting",
+    "status": "nieuw",
+    "uses": 1
+  },
+  "product strategy": {
+    "en": "product strategy",
+    "modules_seen": [
+      "microsoft-enterprise-product-management-fundamentals/module-1"
+    ],
+    "nl": "productstrategie",
+    "status": "in_opbouw",
+    "uses": 6
+  },
+  "product vision": {
+    "en": "product vision",
+    "modules_seen": [
+      "microsoft-enterprise-product-management-fundamentals/module-1"
+    ],
+    "nl": "productvisie",
+    "status": "in_opbouw",
+    "uses": 6
+  },
+  "roadmap": {
+    "en": "roadmap",
+    "modules_seen": [
+      "microsoft-enterprise-product-management-fundamentals/module-1"
+    ],
+    "nl": "roadmap",
+    "status": "in_opbouw",
+    "uses": 6
+  },
+  "stakeholders": {
+    "en": "stakeholders",
+    "modules_seen": [
+      "microsoft-enterprise-product-management-fundamentals/module-1"
+    ],
+    "nl": "stakeholders",
+    "status": "in_opbouw",
+    "uses": 6
+  }
+}
