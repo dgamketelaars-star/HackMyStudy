@@ -199,6 +199,13 @@ status:
 - **bekend** — ik ken deze term inmiddels. Gebruik alleen nog de Engelse term, zonder vertaling:
   "stakeholders".
 
+BELANGRIJK: de woorden "nieuw", "in opbouw" en "bekend" zijn labels voor jouzelf (en voor het
+TERMEN-blok hieronder) — die woorden komen NOOIT letterlijk voor in de zichtbare tekst die ik lees.
+Dus NIET: "stakeholders (nieuw: belanghebbenden)" of "productmanager (nieuw: productmanager)".
+WEL: gewoon "belanghebbenden (stakeholders)", zonder enig label erbij. Als de Nederlandse en
+Engelse term identiek zijn (zoals "productmanager"), hoef je geen haakjes-uitleg te geven — gebruik
+dan gewoon de term zelf, dat telt al als "bekend".
+
 Dit is geen mechanische telling ("na precies drie keer"). Jij beoordeelt zelf, per term, of de
 overgang naar de volgende status hier logisch aanvoelt — een korte, veelgebruikte term (bv.
 "sprint") mag sneller naar "bekend" dan een lastiger of minder centraal begrip. Forceer de overgang

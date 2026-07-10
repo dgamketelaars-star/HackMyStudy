@@ -69,6 +69,11 @@ BARE_TIMESTAMP = re.compile(r"^\d+:\d+$", re.MULTILINE)
 INSTRUCTION_HEADER = re.compile(r"Interactief transcript.*?(?=Speel video af vanaf)", re.DOTALL)
 TERMS_BLOCK = re.compile(r"```?\s*===TERMEN===\s*(.*?)\s*===EINDE TERMEN===\s*```?", re.DOTALL)
 VALID_TERM_STATUSES = {"nieuw", "in_opbouw", "bekend"}
+# Vangnet: het model leert de interne statuslabels (nieuw/in_opbouw/bekend) soms toch
+# zichtbaar in de tekst te zetten, bv. "Roadmap (nieuw: roadmap)", ondanks de expliciete
+# instructie in de prompt om dat niet te doen. Dit is puur cosmetisch (de ledger zelf komt
+# uit het aparte ===TERMEN===-blok, niet hieruit) maar hoort niet in leesbare tekst.
+LEAKED_TERM_LABEL = re.compile(r"\s*\((?:nieuw|in_opbouw|bekend):\s*[^)]*\)", re.IGNORECASE)
 
 _tiktoken_enc = None
 
@@ -103,9 +108,9 @@ def parse_and_strip_terms(text, module_ref):
     de ledger zelf wordt hier niet bijgewerkt, dat doet de aanroeper."""
     match = TERMS_BLOCK.search(text)
     if not match:
-        return text.strip(), []
+        return LEAKED_TERM_LABEL.sub("", text).strip(), []
 
-    clean_text = (text[:match.start()] + text[match.end():]).strip()
+    clean_text = LEAKED_TERM_LABEL.sub("", text[:match.start()] + text[match.end():]).strip()
     updates = []
     for line in match.group(1).strip().splitlines():
         line = line.strip()
